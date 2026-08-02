@@ -5,6 +5,7 @@ import type {
   Meta,
   PaginationParams,
   Rental,
+  RentalStatus,
 } from "@/types";
 
 const createRental = async (payload: CreateRentalPayload): Promise<Rental> => {
@@ -24,6 +25,25 @@ const getMyRentals = async (params?: PaginationParams): Promise<RentalsResult> =
   return { rentals: data.data, meta: data.meta };
 };
 
+const getProviderRentals = async (
+  params?: PaginationParams
+): Promise<RentalsResult> => {
+  const { data } = await api.get<APIResponse<Rental[]>>("/rentals/provider", {
+    params,
+  });
+  return { rentals: data.data, meta: data.meta };
+};
+
+const updateRentalStatus = async (
+  id: string,
+  status: RentalStatus
+): Promise<Rental> => {
+  const { data } = await api.patch<APIResponse<Rental>>(`/rentals/${id}/status`, {
+    status,
+  });
+  return data.data;
+};
+
 const getRental = async (id: string): Promise<Rental> => {
   const { data } = await api.get<APIResponse<Rental>>(`/rentals/${id}`);
   return data.data;
@@ -32,5 +52,7 @@ const getRental = async (id: string): Promise<Rental> => {
 export const RentalService = {
   createRental,
   getMyRentals,
+  getProviderRentals,
+  updateRentalStatus,
   getRental,
 };

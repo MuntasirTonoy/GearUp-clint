@@ -1163,4 +1163,10 @@ expected usage:
 | `/rentals/my-rentals` | GET | `MyRentalsList` (customer dashboard) | Customer only. Lists the authenticated user's rentals with `meta`; CONFIRMED rentals get a "Pay now" button to `/checkout/:rentalId`. |
 | `/rentals/:id` | GET | `CheckoutClient` | Customer only (ownership enforced). Fetches the rental to verify it is `CONFIRMED` before showing the checkout summary. |
 | `/payments/initiate` | POST | `PayNowButton` | Customer only. Body: `{ rentalId }`. Returns `{ sessionId, url }`; the client does `window.location.assign(url)` to send the user to Stripe Checkout. |
+| `/reviews` | POST | `ReviewModal` | Customer only (RETURNED rentals). Body: `{ gearId, rating (1-5), comment }`. Shows toast on success. |
+| `/gears/my-gears` | GET | `MyGearList` (provider dashboard) | Provider only. Lists the authenticated provider's gear with metadata. |
+| `/gears` | POST | `AddGearPage` | Provider only. Body: `multipart/form-data` with `name`, `description`, `dailyRentalPrice`, `quantity`, `categoryId`, `images` (max 5). Returns created gear object. |
+| `/gears/:id` | DELETE | `MyGearList` (delete button) | Provider only. Deletes the specified gear listing. |
+| `/rentals/provider` | GET | `ProviderOrdersList` (incoming orders) | Provider only. Lists rental requests for the provider's gear, with customer info. |
+| `/rentals/:id/status` | PATCH | `ProviderOrdersList` (action buttons) | Provider only. Body: `{ status }`. Approve (`CONFIRMED`)/reject (`CANCELLED`) from `PLACED`, `PICKED_UP` from `PAID`, `RETURNED` from `PICKED_UP`. Uses optimistic UI + toast. |
 

@@ -47,10 +47,13 @@ src/
 │   ├── checkout/            # /checkout/[rentalId] Stripe checkout flow
 │   ├── payment/             # /payment/success and /payment/cancel landing pages
 │   └── dashboard/           # protected areas (/dashboard/customer|provider|admin)
+│       ├── customer/        # sidebar layout (layout.tsx), Overview, My Rentals, Payments
+│       └── provider/        # sidebar layout (layout.tsx), Overview, My Gear, Add New Gear
 ├── components/
 │   ├── auth/                # RegisterForm, LoginForm, SignOutButton (client components)
-│   ├── dashboard/           # role dashboards (MyRentalsList, ...)
+│   ├── dashboard/           # role dashboards (MyRentalsList, ReviewModal, CustomerSidebar)
 │   ├── gear/                # browse/detail blocks (GearFilters, GearGridSection, GearPagination, GearGallery, RentNowWidget, GearReviews)
+│   ├── provider/            # provider components (MyGearList)
 │   ├── payment/             # checkout blocks (CheckoutClient, PayNowButton)
 │   ├── ui/                  # shadcn/ui primitives (generated; see components.json)
 │   └── shared/              # app-level blocks (Navbar, Footer, PublicShell, GearCard, skeletons)
@@ -203,7 +206,8 @@ proxy.ts                     # request proxy (Next.js 16 name for middleware)
   `src/services/category.service.ts` exposes `getCategories` (`GET /categories`);
   `src/services/rental.service.ts` exposes `createRental` (`POST /rentals`),
   `getMyRentals` (`GET /rentals/my-rentals`), and `getRental` (`GET /rentals/:id`);
-  `src/services/payment.service.ts` exposes `initiatePayment` (`POST /payments/initiate`).
+  `src/services/payment.service.ts` exposes `initiatePayment` (`POST /payments/initiate`);
+  `src/services/reviews.service.ts` exposes `createReview` (`POST /reviews`).
   All use the shared axios instance.
 - **Formatting:** `src/utils/format.ts` has `formatCurrency()`; errors use
   `getApiErrorMessage()` in `src/utils/api.ts`.
@@ -226,6 +230,47 @@ proxy.ts                     # request proxy (Next.js 16 name for middleware)
   (`src/app/payment/`) are client-facing confirmation pages. They are NOT the
   Stripe webhook endpoints — those (`POST /payments/success` and
   `POST /payments/fail`) must never be called from the frontend.
+
+## Customer Portal
+
+- **Layout (`src/app/dashboard/customer/layout.tsx`):** sidebar layout with
+  `CustomerSidebar` (Overview, My Rentals, Payments nav) and a top header with
+  GearUp link + SignOutButton. Sidebar is hidden on mobile, visible on `sm+`.
+- **Overview (`src/app/dashboard/customer/page.tsx`):** renders `MyRentalsList`
+  showing all rentals with dynamic status badges.
+- **My Rentals (`src/app/dashboard/customer/rentals/page.tsx`):** same as overview —
+  full rental list with status badges and action buttons.
+- **Payments (`src/app/dashboard/customer/payments/page.tsx`):** placeholder page.
+- **Status Badges:** rendered in `MyRentalsList` via inline Tailwind classes:
+  `PLACED` → yellow (`bg-yellow-400 text-black`), `CONFIRMED` → blue
+  (`bg-blue-500 text-white`), `PAID` → purple (`bg-purple-500 text-white`),
+  `PICKED_UP` → green (`bg-green-500 text-white`), others use default Badge.
+- **Review Modal (`src/components/dashboard/ReviewModal.tsx`):** opens for
+  `RETURNED` rentals via "Leave Review" button. Collects star rating (1–5) and
+  comment, submits via `POST /reviews` (`{ gearId, rating, comment }`). Uses
+  a simple overlay dialog (no shadcn Dialog dependency). On success shows a toast
+  and closes the modal.
+
+## Provider Portal
+
+- **Layout (`src/app/dashboard/provider/layout.tsx`):** sidebar layout with
+  `ProviderSidebar` (Overview, My Gear, Add New Gear nav) and a top header with
+  GearUp link + SignOutButton. Sidebar is hidden on mobile, visible on `sm+`.
+- **Overview (`src/app/dashboard/provider/page.tsx`):** summary stats placeholder.
+- **My Gear (`src/app/dashboard/provider/gears/page.tsx`):** renders `MyGearList`
+  showing all rentals with status badges. CONFIRMED rentals get a "Pay now" button,
+  RETURNED rentals get a "Leave Review" button via `ReviewModal`.
+- **Add New Gear (`src/app/dashboard/provider/gear/new/page.tsx`):** form with
+  FormData upload. Fields: name, description, dailyRentalPrice, quantity,
+  categoryId, images (max 5). Uses `POST /gears` on submit.
+- **Status Badges:** `AVAILABLE` → green, `RENTED` → blue, `PICKED_UP` → teal,
+  `RETURNED` → gray, `CANCELLED` → red.
+- **Delete:** uses `DELETE /gears/:id` from `GearService.deleteGear`.
+
+## Enums
+  comment, submits via `POST /reviews` (`{ gearId, rating, comment }`). Uses
+  a simple overlay dialog (no shadcn Dialog dependency). On success shows a toast
+  and closes the modal.
 
 ## Enums
 
