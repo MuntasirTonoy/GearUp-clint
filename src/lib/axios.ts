@@ -5,7 +5,10 @@ import axios, {
 } from "axios";
 import type { APIResponse, RefreshTokenPayload } from "@/types";
 
-export const API_URL = "https://gearup-api.ranoklab.com/api";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+export const API_URL = apiUrl;
+
 
 declare module "axios" {
   interface AxiosRequestConfig {

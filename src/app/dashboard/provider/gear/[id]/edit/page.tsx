@@ -95,14 +95,27 @@ export default function EditGearPage() {
 
   const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 5) {
-      toast.error("Maximum 5 images allowed");
+    const totalCurrent = existingImages.length + formData.images.length;
+    if (totalCurrent + files.length > 5) {
+      toast.error(`You can only have up to 5 images total. You can add ${Math.max(0, 5 - totalCurrent)} more.`);
       return;
     }
-    setFormData((prev) => ({ ...prev, images: files }));
+    setFormData((prev) => ({ ...prev, images: [...prev.images, ...files] }));
 
-    const urls = files.slice(0, 5).map((file) => URL.createObjectURL(file));
-    setPreviewUrls(urls);
+    const urls = files.map((file) => URL.createObjectURL(file));
+    setPreviewUrls((prev) => [...prev, ...urls]);
+  };
+
+  const handleRemoveExistingImage = (index: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveNewImage = (index: number) => {
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async () => {
@@ -136,6 +149,7 @@ export default function EditGearPage() {
       data.append("dailyRentalPrice", formData.dailyRentalPrice);
       data.append("quantity", formData.quantity);
       data.append("categoryId", formData.categoryId);
+      data.append("existingImages", JSON.stringify(existingImages));
       
       if (formData.images.length > 0) {
         formData.images.forEach((img) => data.append("images", img));
@@ -290,20 +304,57 @@ export default function EditGearPage() {
                 </div>
               </div>
 
-              {(previewUrls.length > 0 || existingImages.length > 0) && (
-                <div>
-                  <Label>{previewUrls.length > 0 ? "New Images Preview" : "Existing Images"}</Label>
-                  <div className="mt-2 grid grid-cols-3 gap-2">
-                    {(previewUrls.length > 0 ? previewUrls : existingImages).map((url, index) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={index}
-                        src={url}
-                        alt={`Preview ${index + 1}`}
-                        className="h-20 w-full rounded object-cover"
-                      />
-                    ))}
-                  </div>
+              {(existingImages.length > 0 || previewUrls.length > 0) && (
+                <div className="space-y-4">
+                  {existingImages.length > 0 && (
+                    <div>
+                      <Label>Existing Images</Label>
+                      <div className="mt-2 grid grid-cols-3 gap-2">
+                        {existingImages.map((url, index) => (
+                          <div key={index} className="relative group">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={url}
+                              alt={`Existing ${index + 1}`}
+                              className="h-20 w-full rounded object-cover border border-border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveExistingImage(index)}
+                              className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-destructive/80 text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive"
+                            >
+                              <span className="text-[10px] font-bold">✕</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {previewUrls.length > 0 && (
+                    <div>
+                      <Label>New Images Preview</Label>
+                      <div className="mt-2 grid grid-cols-3 gap-2">
+                        {previewUrls.map((url, index) => (
+                          <div key={index} className="relative group">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={url}
+                              alt={`Preview ${index + 1}`}
+                              className="h-20 w-full rounded object-cover border border-border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveNewImage(index)}
+                              className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-destructive/80 text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive"
+                            >
+                              <span className="text-[10px] font-bold">✕</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

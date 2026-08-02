@@ -44,6 +44,11 @@ const updateRentalStatus = async (
   return data.data;
 };
 
+const cancelRental = async (id: string): Promise<Rental> => {
+  const { data } = await api.patch<APIResponse<Rental>>(`/rentals/${id}/cancel`);
+  return data.data;
+};
+
 const getRental = async (id: string): Promise<Rental> => {
   const { data } = await api.get<APIResponse<Rental>>(`/rentals/${id}`);
   return data.data;
@@ -54,5 +59,6 @@ export const RentalService = {
   getMyRentals,
   getProviderRentals,
   updateRentalStatus,
+  cancelRental,
   getRental,
 };

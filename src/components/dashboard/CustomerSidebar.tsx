@@ -7,11 +7,13 @@ import {
   Package,
   CreditCard,
   ChevronRight,
+  ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/dashboard/customer", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/customer/cart", label: "Cart", icon: ShoppingCart },
   { href: "/dashboard/customer/rentals", label: "My Rentals", icon: Package },
   { href: "/dashboard/customer/payments", label: "Payments", icon: CreditCard },
 ];

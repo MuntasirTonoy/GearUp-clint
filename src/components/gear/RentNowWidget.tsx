@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { CalendarDays, Package } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { RentalService } from "@/services/rental.service";
+import { PaymentService } from "@/services/payment.service";
 import { getApiErrorMessage } from "@/utils/api";
 import { getDashboardPath } from "@/utils/auth";
 import { formatCurrency } from "@/utils/format";
@@ -60,7 +61,7 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
     setError(null);
   };
 
-  const handleRent = async () => {
+  const handleAction = async (actionType: "CART" | "RENT") => {
     if (!isAvailable) {
       setError("This item is not available for rent right now.");
       return;
@@ -87,15 +88,24 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
 
     setIsSubmitting(true);
     try {
-      await RentalService.createRental({
+      const rental = await RentalService.createRental({
         gearId: gear.id,
         startDate,
         endDate,
       });
-      toast.success(`Rental for "${gear.name}" requested successfully!`);
-      router.push(getDashboardPath("CUSTOMER"));
-      router.refresh();
+
+      if (actionType === "CART") {
+        toast.success(`"${gear.name}" added to your cart!`);
+        router.push("/dashboard/customer/cart");
+        router.refresh();
+      } else if (actionType === "RENT") {
+        toast.loading("Redirecting to payment...", { id: "payment-redirect" });
+        const session = await PaymentService.initiatePayment(rental.id);
+        toast.dismiss("payment-redirect");
+        window.location.href = session.url;
+      }
     } catch (err) {
+      toast.dismiss("payment-redirect");
       toast.error(getApiErrorMessage(err));
       setIsSubmitting(false);
     }
@@ -186,17 +196,29 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
           </div>
         </div>
 
-        <Button
-          type="button"
-          className="w-full bg-emerald-500 text-white hover:bg-emerald-400"
-          onClick={handleRent}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Booking..." : "Rent Now"}
-        </Button>
+        <div className="flex flex-col gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+            onClick={() => handleAction("CART")}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Processing..." : "Add to Cart"}
+          </Button>
+
+          <Button
+            type="button"
+            className="w-full bg-emerald-500 text-white hover:bg-emerald-400"
+            onClick={() => handleAction("RENT")}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Processing..." : "Rent Now"}
+          </Button>
+        </div>
+        
         <p className="text-center text-xs text-muted-foreground">
-          You&apos;ll be signed in to continue. Rentals are confirmed by the
-          provider.
+          You&apos;ll be signed in to continue.
         </p>
       </CardContent>
     </Card>

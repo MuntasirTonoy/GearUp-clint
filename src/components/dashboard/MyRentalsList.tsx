@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, CreditCard, Package, Star } from "lucide-react";
+import { CalendarDays, Package, Star } from "lucide-react";
 import { RentalService } from "@/services/rental.service";
 import { formatCurrency } from "@/utils/format";
 import type { Rental, RentalStatus } from "@/types";
@@ -35,7 +35,7 @@ export default function MyRentalsList() {
 
   const fetchRentals = useCallback(async (): Promise<Rental[]> => {
     const result = await RentalService.getMyRentals();
-    return result.rentals;
+    return result.rentals.filter((r) => r.status !== "PLACED");
   }, []);
 
   useEffect(() => {
@@ -96,7 +96,7 @@ export default function MyRentalsList() {
       <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
         <Package className="size-10 text-muted-foreground" />
         <div className="space-y-1">
-          <p className="font-semibold">No rentals yet</p>
+          <p className="font-semibold">No active rentals</p>
           <p className="text-sm text-muted-foreground">
             Browse gear and book your first rental.
           </p>
@@ -148,28 +148,16 @@ function RentalRow({ rental }: { rental: Rental }) {
             className={
               rental.status === "CONFIRMED"
                 ? "bg-blue-500 text-white"
-                : rental.status === "PLACED"
-                  ? "bg-yellow-400 text-black"
-                  : rental.status === "PAID"
-                    ? "bg-purple-500 text-white"
-                    : rental.status === "PICKED_UP"
-                      ? "bg-green-500 text-white"
-                      : undefined
+                : rental.status === "PAID"
+                  ? "bg-purple-500 text-white"
+                  : rental.status === "PICKED_UP"
+                    ? "bg-green-500 text-white"
+                    : undefined
             }
           >
             {STATUS_LABELS[rental.status]}
           </Badge>
-          {rental.status === "CONFIRMED" && (
-            <Link
-              href={`/checkout/${rental.id}`}
-              className={cn(
-                "inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-emerald-500 px-3 text-sm font-medium text-white transition-colors hover:bg-emerald-400"
-              )}
-            >
-              <CreditCard className="size-4" />
-              Pay now
-            </Link>
-          )}
+
           {rental.status === "RETURNED" && (
             <Button
               type="button"
