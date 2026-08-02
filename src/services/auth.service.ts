@@ -34,9 +34,19 @@ const getMe = async (): Promise<User> => {
   return data.data;
 };
 
+const updateMe = async (payload: FormData): Promise<User> => {
+  const { data } = await api.patch<APIResponse<User>>("/users/me", payload, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return data.data;
+};
+
 export const AuthService = {
   register,
   login,
   logout,
   getMe,
+  updateMe,
 };

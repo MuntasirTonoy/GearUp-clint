@@ -1,4 +1,3 @@
-import Navbar from "./Navbar";
 import Footer from "./Footer";
 
 export default function PublicShell({
@@ -8,7 +7,6 @@ export default function PublicShell({
 }) {
   return (
     <div className="flex flex-1 flex-col">
-      <Navbar />
       <main className="flex flex-1 flex-col">{children}</main>
       <Footer />
     </div>

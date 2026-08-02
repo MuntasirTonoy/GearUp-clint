@@ -5,8 +5,7 @@ import axios, {
 } from "axios";
 import type { APIResponse, RefreshTokenPayload } from "@/types";
 
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
+export const API_URL = "https://gearup-api.ranoklab.com/api";
 
 declare module "axios" {
   interface AxiosRequestConfig {
@@ -27,10 +26,25 @@ const api = axios.create({
   },
 });
 
-let accessToken: string | null = null;
+const getInitialAccessToken = () => {
+  if (typeof document !== "undefined") {
+    const match = document.cookie.match(new RegExp('(^| )accessToken=([^;]+)'));
+    if (match) return match[2];
+  }
+  return null;
+};
+
+let accessToken: string | null = getInitialAccessToken();
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
+  if (typeof document !== "undefined") {
+    if (token) {
+      document.cookie = `accessToken=${token}; path=/; max-age=604800; SameSite=Lax`;
+    } else {
+      document.cookie = `accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    }
+  }
 };
 
 export const getAccessToken = () => accessToken;

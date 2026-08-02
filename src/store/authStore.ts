@@ -22,6 +22,7 @@ interface AuthState {
   login: (payload: LoginPayload) => Promise<void>;
   logout: () => Promise<void>;
   fetchMe: () => Promise<void>;
+  updateProfile: (data: FormData) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -73,6 +74,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       setAccessToken(null);
       set({ user: null, status: "unauthenticated" });
+    }
+  },
+
+  updateProfile: async (data: FormData) => {
+    set({ status: "loading" });
+    try {
+      const user = await AuthService.updateMe(data);
+      set({ user, status: "authenticated" });
+    } catch (error) {
+      // Revert loading status on failure but keep authentication intact
+      set({ status: "authenticated" });
+      throw error;
     }
   },
 }));

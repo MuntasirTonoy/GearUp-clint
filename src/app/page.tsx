@@ -5,6 +5,8 @@ import { buttonVariants } from "@/components/ui/button";
 import PublicShell from "@/components/shared/PublicShell";
 import FeaturedGearGrid from "@/components/shared/FeaturedGearGrid";
 import FeaturedGearSkeleton from "@/components/shared/FeaturedGearSkeleton";
+import ScrollReveal from "@/components/shared/ScrollReveal";
+import CountUp from "@/components/shared/CountUp";
 import {
   ArrowRight,
   Tent,
@@ -26,23 +28,23 @@ import {
 export const dynamic = "force-dynamic";
 
 const STATS = [
-  { value: "2,400+", label: "Gear items", Icon: Award },
-  { value: "98%", label: "Satisfaction", Icon: Star },
-  { value: "500+", label: "Providers", Icon: Users },
-  { value: "4.9★", label: "Average rating", Icon: TrendingUp },
+  { target: 2400, suffix: "+", label: "Gear items", Icon: Award },
+  { target: 98, suffix: "%", label: "Satisfaction", Icon: Star },
+  { target: 500, suffix: "+", label: "Providers", Icon: Users },
+  { target: 4.9, suffix: "★", label: "Average rating", Icon: TrendingUp, isFloat: true },
 ];
 
 const GEAR_ICONS = [
-  { Icon: Tent, label: "Camping", delay: "0s", x: "7%", y: "22%" },
-  { Icon: Bike, label: "Cycling", delay: "1.8s", x: "84%", y: "16%" },
-  { Icon: Snowflake, label: "Winter", delay: "3.2s", x: "10%", y: "65%" },
-  { Icon: Waves, label: "Water", delay: "2.1s", x: "82%", y: "70%" },
+  { Icon: Tent,      label: "Camping", delay: "0s",   x: "7%",  y: "22%" },
+  { Icon: Bike,      label: "Cycling", delay: "1.8s", x: "84%", y: "16%" },
+  { Icon: Snowflake, label: "Winter",  delay: "3.2s", x: "10%", y: "65%" },
+  { Icon: Waves,     label: "Water",   delay: "2.1s", x: "82%", y: "70%" },
 ];
 
 const TRUST_BADGES = [
   { Icon: Shield, text: "Verified providers" },
-  { Icon: Star, text: "5-star rated" },
-  { Icon: Zap, text: "Instant booking" },
+  { Icon: Star,   text: "5-star rated" },
+  { Icon: Zap,    text: "Instant booking" },
 ];
 
 const HOW_IT_WORKS = [
@@ -74,53 +76,40 @@ export default function HomePage() {
     <PublicShell>
       {/* ────────────── HERO ────────────── */}
       <section className="relative min-h-[92vh] overflow-hidden flex items-center bg-zinc-100 text-zinc-900 dark:bg-zinc-950 dark:text-white transition-colors duration-300">
-        {/* Animated background — adapts to theme */}
+        {/* Animated background glows — distinct colors */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          {/* Primary orb */}
+          {/* Primary orb — orange */}
           <div
             className="absolute -top-32 left-1/4 h-[500px] w-[500px] -translate-x-1/2 rounded-full"
             style={{
-              background:
-                "radial-gradient(circle, rgba(16,185,129,0.25) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(249,115,22,0.30) 0%, transparent 70%)",
               animation: "orb-drift 12s ease-in-out infinite",
             }}
           />
-          {/* Secondary orb */}
+          {/* Secondary orb — violet/purple contrast */}
           <div
-            className="absolute top-1/2 right-0 h-[400px] w-[400px] translate-x-1/4 -translate-y-1/2 rounded-full"
+            className="absolute top-1/2 right-0 h-[420px] w-[420px] translate-x-1/4 -translate-y-1/2 rounded-full"
             style={{
-              background:
-                "radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(139,92,246,0.22) 0%, transparent 70%)",
               animation: "orb-drift-2 15s ease-in-out infinite",
               animationDelay: "3s",
             }}
           />
-          {/* Tertiary accent */}
+          {/* Tertiary orb — pink/rose contrast */}
           <div
-            className="absolute bottom-0 left-1/3 h-[300px] w-[300px] rounded-full"
+            className="absolute bottom-0 left-1/3 h-[320px] w-[320px] rounded-full"
             style={{
-              background:
-                "radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(236,72,153,0.16) 0%, transparent 70%)",
               animation: "orb-drift 18s ease-in-out infinite",
               animationDelay: "6s",
             }}
           />
-
-          {/* Grid mesh */}
-          <div
-            className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
-            style={{
-              backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`,
-              backgroundSize: "80px 80px",
-            }}
-          />
-
-          {/* Top glow line */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+          {/* Top glow line — orange accent */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-zinc-400/20 dark:via-white/10 to-transparent" />
         </div>
 
-        {/* Floating gear icons — outer div floats up/down, inner card sways gently */}
+        {/* Floating gear icons */}
         {GEAR_ICONS.map(({ Icon, label, delay, x, y }, i) => (
           <div
             key={label}
@@ -133,7 +122,7 @@ export default function HomePage() {
             }}
           >
             <div
-              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-300/60 bg-white/70 shadow-lg shadow-zinc-200/40 backdrop-blur-sm dark:border-white/10 dark:bg-white/5 dark:shadow-black/20"
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-300/60 bg-white/70 shadow-lg shadow-orange-200/40 backdrop-blur-sm dark:border-white/10 dark:bg-white/5 dark:shadow-black/20"
               style={{
                 animation: `icon-sway ${7 + i * 1.3}s ease-in-out infinite`,
                 animationDelay: `${parseFloat(delay) + 0.5}s`,
@@ -168,7 +157,7 @@ export default function HomePage() {
               className="block"
               style={{
                 backgroundImage:
-                  "linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #a855f7 100%)",
+                  "linear-gradient(135deg, #f97316 0%, #a855f7 50%, #ec4899 100%)",
                 backgroundSize: "200% auto",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -226,48 +215,53 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Bottom fade into background */}
+        {/* Bottom fade */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* ────────────── STATS STRIP ────────────── */}
       <section className="border-y border-border bg-muted/40 dark:border-white/5 dark:bg-white/[0.02]">
         <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-y divide-border md:grid-cols-4 md:divide-y-0">
-          {STATS.map(({ value, label, Icon }) => (
-            <div
+          {STATS.map(({ target, suffix, label, Icon, isFloat }, idx) => (
+            <ScrollReveal
               key={label}
+              delay={idx * 100}
+              direction="up"
               className="flex flex-col items-center gap-2 px-8 py-10 text-center"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 dark:text-emerald-400">
                 <Icon className="h-5 w-5" />
               </span>
               <span className="text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-                {value}
+                {isFloat ? (
+                  <span>4.9★</span>
+                ) : (
+                  <CountUp target={target} suffix={suffix} />
+                )}
               </span>
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {label}
               </span>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </section>
 
       {/* ────────────── HOW IT WORKS ────────────── */}
       <section className="relative overflow-hidden py-24 sm:py-32">
-        {/* Subtle background accent */}
+        {/* Background accent orb */}
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div
             className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20"
             style={{
-              background:
-                "radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(249,115,22,0.3) 0%, transparent 70%)",
             }}
           />
         </div>
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mx-auto max-w-2xl text-center">
+          <ScrollReveal direction="up" className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
               <Clock className="h-3 w-3" />
               Simple 3-step process
@@ -279,40 +273,43 @@ export default function HomePage() {
               Getting your hands on great outdoor gear has never been this easy.
               No membership, no long-term commitment.
             </p>
-          </div>
+          </ScrollReveal>
 
           {/* Steps grid */}
           <div className="relative mt-16 grid gap-8 md:grid-cols-3">
             {/* Connector line */}
             <div className="pointer-events-none absolute inset-x-0 top-[52px] hidden h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent md:block" />
 
-            {HOW_IT_WORKS.map(({ step, Icon, title, description }) => (
-              <div
+            {HOW_IT_WORKS.map(({ step, Icon, title, description }, idx) => (
+              <ScrollReveal
                 key={step}
-                className="group relative flex flex-col items-center gap-5 rounded-2xl border border-border bg-card p-8 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/30 hover:shadow-md hover:shadow-emerald-500/5"
+                direction="up"
+                delay={idx * 150}
               >
-                {/* Step number — sits on the connector line */}
-                <div className="relative flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border-2 border-emerald-500/40 bg-background shadow-md shadow-emerald-500/10 transition-all duration-300 group-hover:border-emerald-500 group-hover:shadow-emerald-500/20">
-                  <Icon className="h-6 w-6 text-emerald-500 dark:text-emerald-400 transition-transform duration-300 group-hover:scale-110" />
-                  <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-black text-white shadow">
-                    {step}
-                  </span>
-                </div>
+                <div className="group relative flex flex-col items-center gap-5 rounded-2xl border border-border bg-card p-8 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10">
+                  {/* Step icon */}
+                  <div className="relative flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border-2 border-emerald-500/40 bg-background shadow-md shadow-emerald-500/10 transition-all duration-300 group-hover:border-emerald-500 group-hover:shadow-emerald-500/20">
+                    <Icon className="h-6 w-6 text-emerald-500 dark:text-emerald-400 transition-transform duration-300 group-hover:scale-110" />
+                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-black text-white shadow">
+                      {step}
+                    </span>
+                  </div>
 
-                <div>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
-                    {title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {description}
-                  </p>
+                  <div>
+                    <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                      {title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {description}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
 
           {/* CTA */}
-          <div className="mt-12 flex justify-center">
+          <ScrollReveal direction="up" delay={300} className="mt-12 flex justify-center">
             <Link
               href="/gear"
               className="group inline-flex h-11 items-center gap-2 rounded-full bg-zinc-900 px-7 text-sm font-semibold text-white shadow transition-all duration-300 hover:scale-[1.03] hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
@@ -320,13 +317,13 @@ export default function HomePage() {
               Start exploring gear
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </Link>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* ────────────── FEATURED GEAR ────────────── */}
       <section className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between gap-4">
+        <ScrollReveal direction="up" className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Featured Gear
@@ -345,12 +342,12 @@ export default function HomePage() {
             View all
             <ArrowRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
           </Link>
-        </div>
-        <div className="mt-8">
+        </ScrollReveal>
+        <ScrollReveal direction="up" delay={100} className="mt-8">
           <Suspense fallback={<FeaturedGearSkeleton />}>
             <FeaturedGearGrid />
           </Suspense>
-        </div>
+        </ScrollReveal>
       </section>
     </PublicShell>
   );

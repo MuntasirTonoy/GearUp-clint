@@ -18,6 +18,8 @@ export const metadata: Metadata = {
     "Rent sports and outdoor gear on demand from trusted local providers.",
 };
 
+import Navbar from "@/components/shared/Navbar";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,6 +29,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${raleway.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <Script id="theme-init" strategy="beforeInteractive">
@@ -47,6 +50,7 @@ export default function RootLayout({
             })();
           `}
         </Script>
+        <Navbar />
         {children}
         <Toaster position="top-center" richColors />
       </body>

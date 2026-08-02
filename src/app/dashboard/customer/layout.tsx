@@ -1,6 +1,5 @@
 import CustomerSidebar from "@/components/dashboard/CustomerSidebar";
-import SignOutButton from "@/components/auth/SignOutButton";
-import Link from "next/link";
+import DashboardMobileNav from "@/components/dashboard/DashboardMobileNav";
 
 export default function CustomerDashboardLayout({
   children,
@@ -9,16 +8,14 @@ export default function CustomerDashboardLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-muted/30">
-      <header className="flex items-center justify-between border-b bg-background px-6 py-3">
-        <Link href="/" className="text-base font-semibold">
-          GearUp
-        </Link>
-        <SignOutButton />
-      </header>
-      <main className="flex flex-1">
+      {/* Mobile-only tab bar — plain string prop, safe for RSC */}
+      <DashboardMobileNav type="customer" />
+
+      {/* Desktop: sidebar + content side by side */}
+      <div className="flex flex-1">
         <CustomerSidebar />
-        <div className="flex-1">{children}</div>
-      </main>
+        <div className="flex-1 min-w-0">{children}</div>
+      </div>
     </div>
   );
 }

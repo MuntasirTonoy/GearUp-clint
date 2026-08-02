@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -11,20 +11,12 @@ import {
   Mountain,
   X,
   Compass,
+  User,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { getDashboardPath } from "@/utils/auth";
 import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
 import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS = [
@@ -39,16 +31,20 @@ export default function Navbar() {
   const status = useAuthStore((state) => state.status);
   const logout = useAuthStore((state) => state.logout);
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileHeight, setMobileHeight] = useState(0);
+  const mobileDrawerRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
+  // Bootstrap auth
   useEffect(() => {
     const state = useAuthStore.getState();
-    if (state.status === "idle") {
-      state.fetchMe();
-    }
+    if (state.status === "idle") state.fetchMe();
   }, []);
 
+  // Scroll handler
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 16);
     window.addEventListener("scroll", handler, { passive: true });
@@ -56,10 +52,29 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // close mobile menu on route change
+  // Measure drawer height for smooth animation
   useEffect(() => {
-    setIsMenuOpen(false);
+    if (mobileDrawerRef.current) {
+      setMobileHeight(mobileOpen ? mobileDrawerRef.current.scrollHeight : 0);
+    }
+  }, [mobileOpen]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+    setProfileOpen(false);
   }, [pathname]);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const isLoading = status === "idle" || status === "loading";
   const isAuthenticated = status === "authenticated" && !!user;
@@ -71,7 +86,7 @@ export default function Navbar() {
   const initials = user?.name
     ? user.name
         .split(" ")
-        .map((part) => part[0])
+        .map((p) => p[0])
         .filter(Boolean)
         .slice(0, 2)
         .join("")
@@ -79,111 +94,136 @@ export default function Navbar() {
     : "";
 
   const handleSignOut = async () => {
+    setMobileOpen(false);
+    setProfileOpen(false);
     await logout();
     router.push("/");
     router.refresh();
   };
+
+  if (pathname === "/login" || pathname === "/register") return null;
 
   return (
     <header
       className={cn(
         "animate-navbar-in sticky top-0 z-50 transition-all duration-300",
         scrolled
-          ? "border-b border-white/10 bg-zinc-950/80 shadow-xl shadow-black/20 backdrop-blur-xl dark:bg-zinc-950/80"
-          : "bg-zinc-950/60 backdrop-blur-md dark:bg-zinc-950/60"
+          ? "border-b border-border bg-background/80 shadow-md backdrop-blur-xl"
+          : "bg-background/60 backdrop-blur-md"
       )}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        {/* Logo */}
+        {/* ── Logo ── */}
         <Link
           href="/"
-          className="group flex items-center gap-2.5 text-lg font-bold tracking-tight text-white"
+          className="group flex items-center gap-2.5 text-lg font-bold tracking-tight text-foreground"
         >
-          <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30 transition-transform duration-300 group-hover:scale-110">
+          <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg shadow-orange-500/30 transition-transform duration-300 group-hover:scale-110">
             <Mountain className="size-4 text-white" />
           </span>
-          <span className="bg-gradient-to-r from-white to-zinc-300 bg-clip-text text-transparent">
+          <span className="hidden bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent sm:inline">
             GearUp
           </span>
         </Link>
 
-        {/* Desktop Nav links */}
+        {/* ── Desktop nav links (md+) ── */}
         <div className="hidden h-full items-stretch gap-1 md:flex">
-          {NAV_LINKS.map((link) => {
-            const active = isActive(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "relative flex items-center px-4 text-sm font-medium transition-colors duration-200",
-                  active
-                    ? "text-white"
-                    : "text-zinc-400 hover:text-white"
-                )}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "relative flex items-center px-4 text-sm font-medium transition-colors duration-200",
+                isActive(link.href)
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {link.label}
+              {isActive(link.href) && (
+                <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-orange-500" />
+              )}
+            </Link>
+          ))}
         </div>
 
-        {/* Right side */}
+        {/* ── Right side ── */}
         <div className="flex items-center gap-2">
-          <ThemeToggle className="text-zinc-400 hover:text-white hover:bg-white/10" />
+          <ThemeToggle className="text-muted-foreground hover:text-foreground hover:bg-secondary" />
 
-          {isLoading ? (
-            <Skeleton className="hidden h-9 w-24 bg-white/10 md:block" aria-hidden="true" />
-          ) : isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <button
-                    type="button"
-                    className="flex h-10 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-2 pr-3 text-white backdrop-blur-sm transition-all duration-200 hover:border-white/25 hover:bg-white/10"
-                  >
-                    <Avatar className="size-7">
+          {/* ── DESKTOP: authenticated user avatar + dropdown ── */}
+          {!isLoading && isAuthenticated && (
+            <div ref={profileRef} className="relative hidden md:block">
+              <button
+                type="button"
+                onClick={() => setProfileOpen((v) => !v)}
+                className="flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-border transition-all duration-200 hover:ring-orange-500/60 focus:outline-none"
+                aria-label="Account menu"
+                aria-expanded={profileOpen}
+              >
+                <Avatar className="size-9">
+                  {user?.profilePhoto ? (
+                    <AvatarImage src={user.profilePhoto} alt={user.name} />
+                  ) : null}
+                  <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-600 text-[11px] text-white font-bold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+
+              {/* Dropdown */}
+              {profileOpen && (
+                <div className="absolute right-0 top-12 w-64 rounded-2xl border border-border bg-popover shadow-xl shadow-black/10 ring-1 ring-black/5 dark:ring-white/5 overflow-hidden animate-scale-in">
+                  {/* User info */}
+                  <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
+                    <Avatar className="size-10 flex-shrink-0">
                       {user?.profilePhoto ? (
                         <AvatarImage src={user.profilePhoto} alt={user.name} />
                       ) : null}
-                      <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-emerald-600 text-[11px] text-white font-bold">
+                      <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-600 text-sm text-white font-bold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="max-w-[120px] truncate text-sm font-medium">
-                      {user?.name}
-                    </span>
-                    <ChevronDown className="size-3.5 text-zinc-400" />
-                  </button>
-                }
-              />
-              <DropdownMenuContent align="end" className="w-56 border-white/10 bg-zinc-900">
-                <div className="flex flex-col gap-0.5 px-2 py-1.5">
-                  <p className="truncate text-sm font-semibold text-white">{user?.name}</p>
-                  <p className="truncate text-xs text-zinc-500">{user?.email}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">{user?.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </div>
+                  {/* Menu items */}
+                  <div className="p-2">
+                    <Link
+                      href={dashboardPath}
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                    >
+                      <LayoutDashboard className="size-4 text-orange-500" />
+                      My Dashboard
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                    >
+                      <LogOut className="size-4" />
+                      Sign out
+                    </button>
+                  </div>
                 </div>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuItem render={<Link href={dashboardPath} />}>
-                  <LayoutDashboard className="text-emerald-400" />
-                  My Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
-                  <LogOut />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
+              )}
+            </div>
+          )}
+
+          {/* ── DESKTOP: guest buttons ── */}
+          {!isLoading && !isAuthenticated && (
             <div className="hidden items-center gap-2 md:flex">
               <Link
                 href="/login"
-                className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+                className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-sm font-semibold text-white shadow-md shadow-emerald-500/20 transition-all duration-200 hover:scale-[1.03] hover:shadow-emerald-500/40"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 text-sm font-semibold text-white shadow-md shadow-orange-500/20 transition-all duration-200 hover:scale-[1.03] hover:shadow-orange-500/40"
               >
                 <Compass className="size-3.5" />
                 Get started
@@ -191,86 +231,107 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Mobile hamburger */}
-          <Button
+          {/* ── Hamburger (mobile + tablet) ── */}
+          <button
             type="button"
-            variant="ghost"
-            size="icon"
-            className="text-zinc-400 hover:bg-white/10 hover:text-white md:hidden"
-            onClick={() => setIsMenuOpen((open) => !open)}
-            aria-expanded={isMenuOpen}
-            aria-label="Toggle menu"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
           >
-            {isMenuOpen ? <X /> : <Menu />}
-          </Button>
+            {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
         </div>
       </nav>
 
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="border-t border-white/10 bg-zinc-950/95 px-4 py-4 backdrop-blur-xl md:hidden">
-          <div className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => {
-              const active = isActive(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={cn(
-                    "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                    active
-                      ? "bg-emerald-500/15 text-emerald-400"
-                      : "text-zinc-400 hover:bg-white/10 hover:text-white"
-                  )}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+      {/* ── Mobile animated dropdown ── */}
+      <div
+        className="overflow-hidden border-t border-border bg-background/98 backdrop-blur-xl transition-all duration-300 ease-in-out md:hidden"
+        style={{ maxHeight: mobileOpen ? mobileHeight : 0, opacity: mobileOpen ? 1 : 0 }}
+      >
+        <div ref={mobileDrawerRef} className="mx-auto max-w-7xl px-4 py-4 space-y-1 sm:px-6">
 
-            <div className="my-1 h-px bg-white/10" />
+          {/* User info card (if authenticated) */}
+          {isAuthenticated && (
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-muted/40 px-4 py-3 mb-3">
+              <Avatar className="size-10 flex-shrink-0">
+                {user?.profilePhoto ? (
+                  <AvatarImage src={user.profilePhoto} alt={user.name} />
+                ) : null}
+                <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-600 text-sm text-white font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">{user?.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+              </div>
+            </div>
+          )}
 
-            {isAuthenticated ? (
-              <>
-                <Link
-                  href={dashboardPath}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  <LayoutDashboard className="size-4 text-emerald-400" />
-                  My Dashboard
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
-                >
-                  <LogOut className="size-4" />
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/register"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="mt-1 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 py-2.5 text-sm font-semibold text-white"
-                >
-                  <Compass className="size-4" />
-                  Get started
-                </Link>
-              </>
-            )}
-          </div>
+          {/* Nav links */}
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex items-center rounded-xl px-4 py-3 text-sm font-medium transition-colors",
+                isActive(link.href)
+                  ? "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                  : "text-foreground hover:bg-secondary"
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <div className="h-px bg-border my-2" />
+
+          {/* Authenticated actions */}
+          {isAuthenticated ? (
+            <>
+              <Link
+                href={dashboardPath}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+              >
+                <LayoutDashboard className="size-4 text-orange-500" />
+                My Dashboard
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+              >
+                <LogOut className="size-4" />
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+              >
+                <User className="size-4 text-orange-500" />
+                Log in
+              </Link>
+              <Link
+                href="/register"
+                onClick={() => setMobileOpen(false)}
+                className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 py-3 text-sm font-semibold text-white shadow-md shadow-orange-500/20"
+              >
+                <Compass className="size-4" />
+                Get started
+              </Link>
+            </>
+          )}
+
+          {/* Bottom padding so last item isn't clipped */}
+          <div className="h-2" />
         </div>
-      )}
+      </div>
     </header>
   );
 }

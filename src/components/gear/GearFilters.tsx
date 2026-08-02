@@ -131,9 +131,55 @@ export default function GearFilters() {
     "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-emerald-500 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow"
   );
 
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      {/* Mobile Toggle Button */}
+      <div className="flex items-center justify-between lg:hidden">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-between"
+          onClick={() => setIsMobileOpen(!isMobileOpen)}
+        >
+          <span className="flex items-center gap-2 text-base font-bold">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="4" x2="20" y1="6" y2="6" />
+              <line x1="4" x2="20" y1="12" y2="12" />
+              <line x1="4" x2="20" y1="18" y2="18" />
+            </svg>
+            Filters
+            {hasActiveFilters && (
+              <span className="ml-1 flex h-2 w-2 rounded-full bg-orange-500" />
+            )}
+          </span>
+          <ChevronDown
+            className={cn(
+              "size-4 text-muted-foreground transition-transform duration-200",
+              isMobileOpen && "rotate-180"
+            )}
+          />
+        </Button>
+      </div>
+
+      <div
+        className={cn(
+          "flex-col gap-6 lg:flex lg:sticky lg:top-24",
+          isMobileOpen ? "flex" : "hidden"
+        )}
+      >
+        <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold tracking-tight">Filters</h2>
         {hasActiveFilters && (
           <Button
@@ -249,6 +295,7 @@ export default function GearFilters() {
           <span>${PRICE_MIN}</span>
           <span>${PRICE_MAX}</span>
         </div>
+      </div>
       </div>
     </div>
   );

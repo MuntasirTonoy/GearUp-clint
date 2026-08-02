@@ -7,6 +7,7 @@ import { Users, Package, Percent } from "lucide-react";
 import { toast } from "sonner";
 import { getApiErrorMessage } from "@/utils/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import DashboardUserInfoCard from "@/components/dashboard/DashboardUserInfoCard";
 
 export default function AdminDashboardPage() {
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
@@ -28,12 +29,14 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
         <p className="text-muted-foreground mt-2">
           Platform health and key metrics.
         </p>
       </div>
+
+      <DashboardUserInfoCard />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Total Users Card */}
