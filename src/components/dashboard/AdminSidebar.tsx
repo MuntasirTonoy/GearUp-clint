@@ -2,19 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users,
-  Database,
+  Package,
+  ClipboardList,
+  Layers,
   ChevronRight,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import SignOutButton from "@/components/auth/SignOutButton";
 
 const NAV_ITEMS = [
   { href: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/admin/users", label: "User Management", icon: Users },
-  { href: "/dashboard/admin/content", label: "Platform Content", icon: Database },
+  { href: "/dashboard/admin/gears", label: "Gear Listings", icon: Package },
+  { href: "/dashboard/admin/rentals", label: "Rental Transactions", icon: ClipboardList },
+  { href: "/dashboard/admin/categories", label: "Categories", icon: Layers },
 ];
 
 export default function AdminSidebar() {

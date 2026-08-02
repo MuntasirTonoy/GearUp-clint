@@ -22,6 +22,8 @@ import ThemeToggle from "./ThemeToggle";
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/gear", label: "Browse Gear" },
+  { href: "/about", label: "About" },
+  { href: "/help", label: "Help" },
 ];
 
 export default function Navbar() {
@@ -126,30 +128,28 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* ── Desktop nav links (md+) ── */}
-        <div className="hidden h-full items-stretch gap-1 md:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "relative flex items-center px-4 text-sm font-medium transition-colors duration-200",
-                isActive(link.href)
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {link.label}
-              {isActive(link.href) && (
-                <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-orange-500" />
-              )}
-            </Link>
-          ))}
-        </div>
+        {/* ── Right side container (Nav Links + Auth) ── */}
+        <div className="flex flex-1 items-center justify-end gap-2 sm:gap-6">
+          {/* ── Desktop nav links (md+) ── */}
+          <div className="hidden items-center gap-1 md:flex mr-2">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "relative flex items-center px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md",
+                  isActive(link.href)
+                    ? "text-orange-600 dark:text-orange-500 bg-orange-500/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
 
-        {/* ── Right side ── */}
-        <div className="flex items-center gap-2">
-          <ThemeToggle className="text-muted-foreground hover:text-foreground hover:bg-secondary" />
+          <div className="flex items-center gap-2">
+            <ThemeToggle className="text-muted-foreground hover:text-foreground hover:bg-secondary" />
 
           {/* ── DESKTOP: authenticated user avatar + dropdown ── */}
           {!isLoading && isAuthenticated && (
@@ -241,6 +241,7 @@ export default function Navbar() {
           >
             {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
+        </div>
         </div>
       </nav>
 

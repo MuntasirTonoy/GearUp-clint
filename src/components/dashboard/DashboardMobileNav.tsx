@@ -10,6 +10,7 @@ import {
   Plus,
   Users,
   Database,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +29,9 @@ const NAV_CONFIGS = {
   admin: [
     { href: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/admin/users", label: "Users", icon: Users },
-    { href: "/dashboard/admin/content", label: "Content", icon: Database },
+    { href: "/dashboard/admin/gears", label: "Gears", icon: Package },
+    { href: "/dashboard/admin/rentals", label: "Rentals", icon: ClipboardList },
+    { href: "/dashboard/admin/categories", label: "Categories", icon: Layers },
   ],
 } as const;
 

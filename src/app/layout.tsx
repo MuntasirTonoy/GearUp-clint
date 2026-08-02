@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 import Navbar from "@/components/shared/Navbar";
+import { cn } from "@/lib/utils";
 
 export default function RootLayout({
   children,
@@ -28,10 +29,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} h-full antialiased`}
+      className="h-full antialiased"
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className={cn("min-h-full flex flex-col font-sans", raleway.variable, raleway.className)}>
         <Script id="theme-init" strategy="beforeInteractive">
           {`
             (function () {

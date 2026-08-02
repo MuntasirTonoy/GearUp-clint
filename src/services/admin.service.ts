@@ -34,8 +34,22 @@ export interface AdminUserParams extends PaginationParams {
 }
 
 const getOverview = async (): Promise<OverviewMetrics> => {
-  const { data } = await api.get<APIResponse<OverviewMetrics>>("/admin/overview");
-  return data.data;
+  try {
+    const [usersRes, gearsRes, settingsRes] = await Promise.all([
+      api.get<APIResponse<User[]>>("/admin/users", { params: { limit: 1 } }),
+      api.get<APIResponse<Gear[]>>("/admin/gears", { params: { limit: 1 } }),
+      api.get<APIResponse<any>>("/settings"),
+    ]);
+
+    return {
+      totalUsers: usersRes.data.meta?.total || 0,
+      activeGear: gearsRes.data.meta?.total || 0,
+      platformFeeRate: settingsRes.data.data?.platformFeeRate || 10, // default fallback
+    };
+  } catch (error) {
+    console.error("Failed to fetch overview metrics:", error);
+    throw error;
+  }
 };
 
 const getUsers = async (params?: AdminUserParams): Promise<AdminUsersResult> => {

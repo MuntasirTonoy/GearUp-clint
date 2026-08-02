@@ -10,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Search, ChevronLeft, ChevronRight, UserX, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { getApiErrorMessage } from "@/utils/api";
+import { useAuthStore } from "@/store/authStore";
 
 export default function AdminUserTable() {
+  const currentUser = useAuthStore((state) => state.user);
   const [users, setUsers] = useState<User[]>([]);
   const [meta, setMeta] = useState<Meta | undefined>(undefined);
   const [loading, setLoading] = useState(true);
@@ -114,7 +116,12 @@ export default function AdminUserTable() {
                     key={user.id}
                     className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
                   >
-                    <td className="p-4 align-middle font-medium">{user.name}</td>
+                    <td className="p-4 align-middle font-medium">
+                      {user.name}
+                      {currentUser?.id === user.id && (
+                        <span className="ml-2 text-xs text-muted-foreground font-normal">(You)</span>
+                      )}
+                    </td>
                     <td className="p-4 align-middle text-muted-foreground">{user.email}</td>
                     <td className="p-4 align-middle">
                       <Badge variant="outline">{user.role}</Badge>
@@ -127,22 +134,24 @@ export default function AdminUserTable() {
                       )}
                     </td>
                     <td className="p-4 align-middle text-right">
-                      <Button
-                        variant={user.isSuspended ? "default" : "destructive"}
-                        size="sm"
-                        onClick={() => handleToggleSuspension(user)}
-                        className="gap-2"
-                      >
-                        {user.isSuspended ? (
-                          <>
-                            <UserCheck className="size-4" /> Activate
-                          </>
-                        ) : (
-                          <>
-                            <UserX className="size-4" /> Suspend
-                          </>
-                        )}
-                      </Button>
+                      {currentUser?.id !== user.id && (
+                        <Button
+                          variant={user.isSuspended ? "default" : "destructive"}
+                          size="sm"
+                          onClick={() => handleToggleSuspension(user)}
+                          className="gap-2"
+                        >
+                          {user.isSuspended ? (
+                            <>
+                              <UserCheck className="size-4" /> Activate
+                            </>
+                          ) : (
+                            <>
+                              <UserX className="size-4" /> Suspend
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))
