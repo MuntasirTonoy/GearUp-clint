@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ChevronDown, LayoutDashboard, LogOut, Menu, Mountain, X } from "lucide-react";
+import {
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Mountain,
+  X,
+  Compass,
+} from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { getDashboardPath } from "@/utils/auth";
 import { cn } from "@/lib/utils";
@@ -24,9 +32,6 @@ const NAV_LINKS = [
   { href: "/gear", label: "Browse Gear" },
 ];
 
-const GHOST_DARK =
-  "dark:text-white dark:hover:bg-white/10 dark:hover:text-white";
-
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -35,6 +40,7 @@ export default function Navbar() {
   const logout = useAuthStore((state) => state.logout);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const state = useAuthStore.getState();
@@ -42,6 +48,18 @@ export default function Navbar() {
       state.fetchMe();
     }
   }, []);
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 16);
+    window.addEventListener("scroll", handler, { passive: true });
+    handler();
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  // close mobile menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
 
   const isLoading = status === "idle" || status === "loading";
   const isAuthenticated = status === "authenticated" && !!user;
@@ -67,19 +85,30 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white text-zinc-900 dark:bg-zinc-900 dark:text-white">
+    <header
+      className={cn(
+        "animate-navbar-in sticky top-0 z-50 transition-all duration-300",
+        scrolled
+          ? "border-b border-white/10 bg-zinc-950/80 shadow-xl shadow-black/20 backdrop-blur-xl dark:bg-zinc-950/80"
+          : "bg-zinc-950/60 backdrop-blur-md dark:bg-zinc-950/60"
+      )}
+    >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-lg font-bold tracking-tight"
+          className="group flex items-center gap-2.5 text-lg font-bold tracking-tight text-white"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500 text-white">
-            <Mountain className="size-4" />
+          <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30 transition-transform duration-300 group-hover:scale-110">
+            <Mountain className="size-4 text-white" />
           </span>
-          GearUp
+          <span className="bg-gradient-to-r from-white to-zinc-300 bg-clip-text text-transparent">
+            GearUp
+          </span>
         </Link>
 
-        <div className="hidden h-full items-stretch gap-7 md:flex">
+        {/* Desktop Nav links */}
+        <div className="hidden h-full items-stretch gap-1 md:flex">
           {NAV_LINKS.map((link) => {
             const active = isActive(link.href);
             return (
@@ -87,10 +116,10 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "flex items-center border-b-2 text-sm font-medium transition-colors",
+                  "relative flex items-center px-4 text-sm font-medium transition-colors duration-200",
                   active
-                    ? "border-emerald-500 text-zinc-900 dark:text-white"
-                    : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
+                    ? "text-white"
+                    : "text-zinc-400 hover:text-white"
                 )}
               >
                 {link.label}
@@ -99,91 +128,75 @@ export default function Navbar() {
           })}
         </div>
 
-        <div className="flex items-center gap-3">
-          <ThemeToggle className={GHOST_DARK} />
+        {/* Right side */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle className="text-zinc-400 hover:text-white hover:bg-white/10" />
 
           {isLoading ? (
-            <Skeleton
-              className="hidden h-9 w-24 bg-muted md:block"
-              aria-hidden="true"
-            />
+            <Skeleton className="hidden h-9 w-24 bg-white/10 md:block" aria-hidden="true" />
           ) : isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
                   <button
                     type="button"
-                    className={cn(
-                      buttonVariants({ variant: "outline" }),
-                      "h-10 gap-2 rounded-full px-1.5 pr-3 dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/15 dark:aria-expanded:bg-white/15"
-                    )}
+                    className="flex h-10 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-2 pr-3 text-white backdrop-blur-sm transition-all duration-200 hover:border-white/25 hover:bg-white/10"
                   >
                     <Avatar className="size-7">
                       {user?.profilePhoto ? (
-                        <AvatarImage
-                          src={user.profilePhoto}
-                          alt={user.name}
-                        />
+                        <AvatarImage src={user.profilePhoto} alt={user.name} />
                       ) : null}
-                      <AvatarFallback className="bg-emerald-500 text-[11px] text-white">
+                      <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-emerald-600 text-[11px] text-white font-bold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                     <span className="max-w-[120px] truncate text-sm font-medium">
                       {user?.name}
                     </span>
-                    <ChevronDown className="size-4 text-muted-foreground" />
+                    <ChevronDown className="size-3.5 text-zinc-400" />
                   </button>
                 }
               />
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 border-white/10 bg-zinc-900">
                 <div className="flex flex-col gap-0.5 px-2 py-1.5">
-                  <p className="truncate text-sm font-semibold">
-                    {user?.name}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {user?.email}
-                  </p>
+                  <p className="truncate text-sm font-semibold text-white">{user?.name}</p>
+                  <p className="truncate text-xs text-zinc-500">{user?.email}</p>
                 </div>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-white/10" />
                 <DropdownMenuItem render={<Link href={dashboardPath} />}>
-                  <LayoutDashboard />
+                  <LayoutDashboard className="text-emerald-400" />
                   My Dashboard
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={handleSignOut}
-                >
+                <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
                   <LogOut />
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="hidden items-center gap-3 md:flex">
+            <div className="hidden items-center gap-2 md:flex">
               <Link
                 href="/login"
-                className={cn(buttonVariants({ variant: "ghost" }), GHOST_DARK)}
+                className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
               >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className={cn(
-                  buttonVariants({ variant: "default" }),
-                  "bg-emerald-500 text-white hover:bg-emerald-400 hover:text-white"
-                )}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-sm font-semibold text-white shadow-md shadow-emerald-500/20 transition-all duration-200 hover:scale-[1.03] hover:shadow-emerald-500/40"
               >
-                Sign up
+                <Compass className="size-3.5" />
+                Get started
               </Link>
             </div>
           )}
 
+          {/* Mobile hamburger */}
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className={cn(GHOST_DARK, "md:hidden")}
+            className="text-zinc-400 hover:bg-white/10 hover:text-white md:hidden"
             onClick={() => setIsMenuOpen((open) => !open)}
             aria-expanded={isMenuOpen}
             aria-label="Toggle menu"
@@ -193,66 +206,65 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="border-t border-zinc-200 bg-white px-4 py-4 md:hidden dark:border-white/10 dark:bg-zinc-900">
+        <div className="border-t border-white/10 bg-zinc-950/95 px-4 py-4 backdrop-blur-xl md:hidden">
           <div className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsMenuOpen(false)}
-                className={cn(
-                  buttonVariants({ variant: "ghost" }),
-                  GHOST_DARK,
-                  "justify-start"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={cn(
+                    "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-emerald-500/15 text-emerald-400"
+                      : "text-zinc-400 hover:bg-white/10 hover:text-white"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+
+            <div className="my-1 h-px bg-white/10" />
+
             {isAuthenticated ? (
               <>
                 <Link
                   href={dashboardPath}
                   onClick={() => setIsMenuOpen(false)}
-                  className={cn(
-                    buttonVariants({ variant: "ghost" }),
-                    GHOST_DARK,
-                    "justify-start"
-                  )}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
                 >
+                  <LayoutDashboard className="size-4 text-emerald-400" />
                   My Dashboard
                 </Link>
-                <Button
-                  variant="ghost"
-                  className="justify-start text-destructive dark:text-red-400 dark:hover:bg-white/10 dark:hover:text-red-300"
+                <button
                   onClick={handleSignOut}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
                 >
+                  <LogOut className="size-4" />
                   Sign out
-                </Button>
+                </button>
               </>
             ) : (
               <>
                 <Link
                   href="/login"
                   onClick={() => setIsMenuOpen(false)}
-                  className={cn(
-                    buttonVariants({ variant: "ghost" }),
-                    GHOST_DARK,
-                    "justify-start"
-                  )}
+                  className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setIsMenuOpen(false)}
-                  className={cn(
-                    buttonVariants({ variant: "default" }),
-                    "justify-center bg-emerald-500 text-white hover:bg-emerald-400 hover:text-white"
-                  )}
+                  className="mt-1 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 py-2.5 text-sm font-semibold text-white"
                 >
-                  Sign up
+                  <Compass className="size-4" />
+                  Get started
                 </Link>
               </>
             )}
