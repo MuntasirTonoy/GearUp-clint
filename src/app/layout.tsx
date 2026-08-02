@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Raleway } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const raleway = Raleway({
@@ -26,7 +28,28 @@ export default function RootLayout({
       lang="en"
       className={`${raleway.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`
+            (function () {
+              try {
+                var stored = localStorage.getItem("gearup-theme");
+                var dark = stored === "dark";
+                if (!stored) {
+                  dark = window.matchMedia(
+                    "(prefers-color-scheme: dark)"
+                  ).matches;
+                }
+                if (dark) {
+                  document.documentElement.classList.add("dark");
+                }
+              } catch (e) {}
+            })();
+          `}
+        </Script>
+        {children}
+        <Toaster position="top-center" richColors />
+      </body>
     </html>
   );
 }

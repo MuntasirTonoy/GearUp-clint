@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 
 const FOOTER_LINKS = {
   Explore: [
-    { href: "/gears", label: "Browse Gear" },
+    { href: "/gear", label: "Browse Gear" },
     { href: "/", label: "Categories" },
   ],
   Company: [

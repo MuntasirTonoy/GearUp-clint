@@ -1156,6 +1156,11 @@ expected usage:
 | `/auth/logout` | POST | `SignOutButton`, navbar dropdown | Clears both cookies. |
 | `/auth/refresh-token` | POST | axios interceptor (on 401) | Uses `refreshToken` cookie; issues a new `accessToken`. |
 | `/users/me` | GET | `authStore.fetchMe` | Hydrates the navbar's auth state on mount. Called with `skipAuthRefresh: true` so anonymous visitors aren't redirected to `/login`. |
-| `/gears` | GET | home page `FeaturedGearGrid` | Public. Home calls `?limit=4` for the Featured Gear grid; page is `force-dynamic` so it is fetched per request. |
-| `/gears/:id` | GET | gear detail (placeholder) | Public. Future gear detail page. |
+| `/gears` | GET | home `FeaturedGearGrid`; browse page `GearGridSection` | Public. Home calls `?limit=4`; the `/gear` browse page calls with `searchTerm, categoryId, minPrice, maxPrice, page, limit: 12` built from URL query params. |
+| `/gears/:id` | GET | gear detail page `GearDetailPage` | Public. Fetches the full gear (gallery, specs, provider, reviews) on `/gear/[id]`. |
+| `/categories` | GET | `GearFilters` | Public. Populates the category dropdown on the `/gear` browse page. |
+| `/rentals` | POST | `RentNowWidget` | Customer only. Body: `gearId, startDate, endDate` (`YYYY-MM-DD`). Redirects to `/login?redirect=...` if unauthenticated; on success shows a toast and navigates to `/dashboard/customer`. |
+| `/rentals/my-rentals` | GET | `MyRentalsList` (customer dashboard) | Customer only. Lists the authenticated user's rentals with `meta`; CONFIRMED rentals get a "Pay now" button to `/checkout/:rentalId`. |
+| `/rentals/:id` | GET | `CheckoutClient` | Customer only (ownership enforced). Fetches the rental to verify it is `CONFIRMED` before showing the checkout summary. |
+| `/payments/initiate` | POST | `PayNowButton` | Customer only. Body: `{ rentalId }`. Returns `{ sessionId, url }`; the client does `window.location.assign(url)` to send the user to Stripe Checkout. |
 

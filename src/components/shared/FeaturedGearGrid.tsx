@@ -9,8 +9,8 @@ export default async function FeaturedGearGrid() {
     gears = result.gears;
   } catch {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-10 text-center">
-        <p className="text-sm text-zinc-500">
+      <div className="rounded-xl border border-border bg-muted/50 p-10 text-center">
+        <p className="text-sm text-muted-foreground">
           We couldn&apos;t load featured gear right now. Please try again later.
         </p>
       </div>
@@ -19,8 +19,8 @@ export default async function FeaturedGearGrid() {
 
   if (!gears.length) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-10 text-center">
-        <p className="text-sm text-zinc-500">
+      <div className="rounded-xl border border-border bg-muted/50 p-10 text-center">
+        <p className="text-sm text-muted-foreground">
           No gear is listed yet. Check back soon!
         </p>
       </div>

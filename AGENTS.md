@@ -43,10 +43,15 @@ src/
 ├── app/                     # App Router routes (layout.tsx, page.tsx, globals.css)
 │   ├── (auth)/              # login, register, forgot-password
 │   ├── page.tsx             # home (public shell applied via PublicShell component)
-│   ├── gears/               # browse gear (/gears) + gear detail (/gears/[id])
+│   ├── gear/                # browse + filter gear (/gear) + gear detail (/gear/[id])
+│   ├── checkout/            # /checkout/[rentalId] Stripe checkout flow
+│   ├── payment/             # /payment/success and /payment/cancel landing pages
 │   └── dashboard/           # protected areas (/dashboard/customer|provider|admin)
 ├── components/
 │   ├── auth/                # RegisterForm, LoginForm, SignOutButton (client components)
+│   ├── dashboard/           # role dashboards (MyRentalsList, ...)
+│   ├── gear/                # browse/detail blocks (GearFilters, GearGridSection, GearPagination, GearGallery, RentNowWidget, GearReviews)
+│   ├── payment/             # checkout blocks (CheckoutClient, PayNowButton)
 │   ├── ui/                  # shadcn/ui primitives (generated; see components.json)
 │   └── shared/              # app-level blocks (Navbar, Footer, PublicShell, GearCard, skeletons)
 ├── hooks/                   # custom React hooks (useAuth, useDebounce, ...)
@@ -113,30 +118,40 @@ proxy.ts                     # request proxy (Next.js 16 name for middleware)
   Errors are surfaced through `getApiErrorMessage()` in `src/utils/api.ts`.
 - **Route protection (`src/proxy.ts`):** Next.js 16 renamed `middleware.ts` to
   `proxy.ts` (deprecated `middleware` is NOT used). It protects
-  `/dashboard/customer`, `/dashboard/provider`, `/dashboard/admin` based on
-  the presence of the `accessToken` cookie and the `role` claim decoded from
-  the JWT payload (optimistic check only — the backend is the source of
-  truth for authorization). Unauthenticated users are redirected to `/login`
-  with a `?redirect=` query param; users on the wrong dashboard are redirected
-  to their own role dashboard. Authenticated users visiting `/login` or
-  `/register` are sent to their dashboard.
+  `/dashboard/customer`, `/dashboard/provider`, `/dashboard/admin`, and
+  `/checkout` based on the presence of the `accessToken` cookie and the `role`
+  claim decoded from the JWT payload (optimistic check only — the backend is
+  the source of truth for authorization). Unauthenticated users are redirected
+  to `/login` with a `?redirect=` query param; users on the wrong dashboard are
+  redirected to their own role dashboard. Authenticated users visiting
+  `/login` or `/register` are sent to their dashboard.
 
 ## Public Shell & Landing Page
 
 - **Public shell (`src/components/shared/PublicShell.tsx`):** composes
   `Navbar` + `<main>` + `Footer` as a server component. Public pages (`/`,
-  `/gears`, `/gears/[id]`) wrap their content in it. Auth pages and
+  `/gear`, `/gear/[id]`) wrap their content in it. Auth pages and
   `/dashboard/*` render without the shell.
 - **Navbar (`src/components/shared/Navbar.tsx`, client):** hydrates auth on
   mount via `fetchMe()` if the store is still `idle` (HTTP-only cookie sends
   itself). Shows a `Skeleton` while resolving; "Log in"/"Sign up" buttons when
   unauthenticated; a Base UI `DropdownMenu` with the user's `Avatar`, "My
   Dashboard" (role-based), and "Sign out" when authenticated. Responsive with
-  a hamburger mobile menu. `next/image` is used for avatar photos.
+  a hamburger mobile menu. `next/image` is used for avatar photos. The active
+  nav tab gets an emerald `border-b-2` underline (matched via `usePathname`).
+- **Theme toggle (`src/components/shared/ThemeToggle.tsx`):** light/dark
+  switch in the navbar. Toggles the `dark` class on `<html>` (shadcn `dark:`
+  variants) and persists the choice in `localStorage` under `gearup-theme`
+  (`src/utils/theme.ts`). A `beforeInteractive` `<Script>` in
+  `src/app/layout.tsx` restores the saved theme (or `prefers-color-scheme` on
+  first visit) before paint to avoid a flash.
 - **Footer (`src/components/shared/Footer.tsx`):** logo, tagline, link
   columns, and a "Become a Provider" CTA.
-- **Home page (`src/app/page.tsx`):** dark Hero with the
+- **Home page (`src/app/page.tsx`):** Hero section whose background adapts to
+  the active theme (light `bg-zinc-100` / dark `bg-zinc-900`) with the
   "Rent Sports & Outdoor Gear Instantly" CTA, then a "Featured Gear" section.
+  Hero content animates in with a staggered `animate-fade-up` entrance and the
+  glow orbs pulse via `animate-glow` (keyframes in `src/app/globals.css`).
   The page is `export const dynamic = "force-dynamic"` so `GET /gears` is
   fetched per request (backend must be running).
 - **Featured grid (`src/components/shared/FeaturedGearGrid.tsx`):** async
@@ -144,11 +159,73 @@ proxy.ts                     # request proxy (Next.js 16 name for middleware)
   wraps it in `<Suspense fallback={<FeaturedGearSkeleton />}>` so skeleton
   cards show while streaming. `GearCard` renders via `next/image` (fill,
   `sizes`) with a `Badge` for status; missing images fall back to an icon.
-- **Gear service:** `src/services/gear.service.ts` exposes typed `getGears`
-  (`GET /gears`) and `getGear` (`GET /gears/:id`) using the shared axios
-  instance.
+  Error/empty states use theme tokens (`bg-muted/50`).
+- **Error & 404 pages:** `src/app/error.tsx` (client, renders inside
+  `PublicShell`, "Try again" via `reset`) and `src/app/not-found.tsx` catch
+  unknown routes and unexpected errors.
+- **Toasts:** shadcn `sonner` (`src/components/ui/sonner.tsx`) mounted as
+  `<Toaster position="top-center" richColors />` in `src/app/layout.tsx`.
+  Call `toast()` from `sonner` anywhere. The Toaster follows the current theme
+  via `useTheme()` in `src/utils/theme.ts` (class-based, not next-themes).
+- **Browse page (`src/app/gear/page.tsx`, server, `force-dynamic`):** reads
+  `searchParams` and renders `GearFilters` (sidebar, client) + a Suspense-wrapped
+  `GearGridSection` that calls `GET /gears` with `{ searchTerm, categoryId,
+  minPrice, maxPrice, page, limit: 12 }` built from the URL params.
+- **Filters (`src/components/gear/GearFilters.tsx`, client):** fetches
+  `GET /categories` on mount and offers a single-select category dropdown,
+  a dual-thumb price range slider (`PRICE_MIN=0`, `PRICE_MAX=1000`), and a
+  debounced search input (`useDebounce`). Every change is written back to the
+  URL via `router.replace` (removing `page`), which drives the server-side
+  fetch — search is debounced 400ms, price 300ms. A "Reset" button clears all
+  params. `src/hooks/useDebounce.ts` provides the debounce hook.
+- **Pagination (`src/components/gear/GearPagination.tsx`):** renders
+  prev/next + numbered pages (with ellipses) as `<Link>`s that preserve the
+  current query params, using `meta.page`/`meta.total` (limit 12) from the
+  `GET /gears` response. Hidden when `totalPages <= 1`. Grid skeleton:
+  `src/components/gear/GearGridSkeleton.tsx`.
+- **Gear detail page (`src/app/gear/[id]/page.tsx`, server, `force-dynamic`):**
+  fetches `GET /gears/:id` (`notFound()` on failure) and renders `GearGallery`,
+  the description/specifications, a provider card, `GearReviews`, and the
+  sticky `RentNowWidget`.
+- **Gallery (`src/components/gear/GearGallery.tsx`, client):** main `next/image`
+  with clickable thumbnails; missing images fall back to an icon.
+- **Rent widget (`src/components/gear/RentNowWidget.tsx`, client):** native
+  `input[type=date]` pickers for start/end with `min={today}` (no past dates;
+  end date clears when it precedes the new start). Computes `totalDays` and
+  `totalAmount = days × dailyRentalPrice` live. "Rent Now" hydrates auth if
+  `idle`, redirects to `/login?redirect=/gear/[id]` when unauthenticated, then
+  calls `POST /rentals` (`{ gearId, startDate, endDate }`); on success shows a
+  `toast` and redirects to `/dashboard/customer`.
+- **Reviews (`src/components/gear/GearReviews.tsx`, server):** star rating
+  (average + per-review), avatar/name/date, and an empty state.
+- **Gear services:** `src/services/gear.service.ts` exposes typed `getGears`
+  (`GET /gears`) and `getGear` (`GET /gears/:id`);
+  `src/services/category.service.ts` exposes `getCategories` (`GET /categories`);
+  `src/services/rental.service.ts` exposes `createRental` (`POST /rentals`),
+  `getMyRentals` (`GET /rentals/my-rentals`), and `getRental` (`GET /rentals/:id`);
+  `src/services/payment.service.ts` exposes `initiatePayment` (`POST /payments/initiate`).
+  All use the shared axios instance.
 - **Formatting:** `src/utils/format.ts` has `formatCurrency()`; errors use
   `getApiErrorMessage()` in `src/utils/api.ts`.
+
+## Payments & Checkout
+
+- **Eligibility:** a rental is payable only when its status is `CONFIRMED`
+  (flow: `PLACED` → `CONFIRMED` → `PAID`). The customer dashboard
+  (`src/app/dashboard/customer/page.tsx`) renders `MyRentalsList`
+  (`src/components/dashboard/MyRentalsList.tsx`), which fetches
+  `GET /rentals/my-rentals` on the client (cookies auto-sent) and shows a
+  "Pay now" link to `/checkout/:rentalId` for `CONFIRMED` rentals.
+- **Checkout (`/checkout/[rentalId]`, `src/components/payment/CheckoutClient.tsx`):**
+  protected by `src/proxy.ts` for `CUSTOMER`. Fetches `GET /rentals/:id` on the
+  client; non-`CONFIRMED` statuses render an explanatory block instead of the
+  payment UI. `PayNowButton` calls `POST /payments/initiate` (`{ rentalId }`),
+  then `window.location.assign(url)` to redirect to the Stripe Checkout URL.
+  Server routes: `src/app/checkout/[rentalId]/page.tsx` (wrapped in PublicShell).
+- **Landing pages:** `/payment/success` and `/payment/cancel`
+  (`src/app/payment/`) are client-facing confirmation pages. They are NOT the
+  Stripe webhook endpoints — those (`POST /payments/success` and
+  `POST /payments/fail`) must never be called from the frontend.
 
 ## Enums
 

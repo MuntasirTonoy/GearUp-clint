@@ -16,7 +16,7 @@ export default function GearCard({ gear }: { gear: Gear }) {
 
   return (
     <Link
-      href={`/gears/${gear.id}`}
+      href={`/gear/${gear.id}`}
       className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Card className="h-full gap-0 overflow-hidden p-0 transition-shadow group-hover:shadow-lg">

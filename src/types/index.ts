@@ -84,8 +84,8 @@ export interface Gear {
   createdAt: string;
   updatedAt: string;
   category?: Pick<Category, "id" | "name" | "description">;
-  provider?: Pick<Provider, "id" | "businessName"> & {
-    user?: Pick<User, "id" | "name" | "email" | "profilePhoto">;
+  provider?: Pick<Provider, "id" | "businessName" | "address"> & {
+    user?: Pick<User, "id" | "name" | "email" | "phone" | "profilePhoto">;
   };
   reviews?: Review[];
   _count?: { rentals: number; reviews: number };
@@ -173,6 +173,11 @@ export interface CreateRentalPayload {
   gearId: string;
   startDate: string;
   endDate: string;
+}
+
+export interface PaymentSession {
+  sessionId: string;
+  url: string;
 }
 
 export interface PaginationParams {

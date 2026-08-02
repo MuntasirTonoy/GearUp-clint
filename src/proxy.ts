@@ -12,6 +12,7 @@ const PROTECTED_ROUTES: Record<string, Role[]> = {
   "/dashboard/customer": ["CUSTOMER"],
   "/dashboard/provider": ["PROVIDER"],
   "/dashboard/admin": ["ADMIN"],
+  "/checkout": ["CUSTOMER"],
 };
 
 const LOGIN_ROUTE = "/login";
@@ -77,5 +78,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/login", "/register", "/checkout/:path*"],
 };
