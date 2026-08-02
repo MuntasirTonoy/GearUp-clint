@@ -33,6 +33,11 @@ const createGear = async (formData: FormData): Promise<Gear> => {
   return data.data;
 };
 
+const updateGear = async (id: string, formData: FormData): Promise<Gear> => {
+  const { data } = await api.patch<APIResponse<Gear>>(`/gears/${id}`, formData);
+  return data.data;
+};
+
 const deleteGear = async (id: string): Promise<void> => {
   await api.delete(`/gears/${id}`);
 };
@@ -42,5 +47,7 @@ export const GearService = {
   getGear,
   getMyGears,
   createGear,
+  updateGear,
   deleteGear,
 };
+// Force Turbopack recompile

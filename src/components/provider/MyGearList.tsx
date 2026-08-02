@@ -181,7 +181,7 @@ export default function MyGearList() {
                       href={`/dashboard/provider/gear/${gear.id}/edit`}
                       className={cn(
                         buttonVariants({ variant: "ghost", size: "sm" }),
-                        "gap-1.5"
+                        "gap-1.5 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
                       )}
                     >
                       Edit
