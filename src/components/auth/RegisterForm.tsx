@@ -7,6 +7,11 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { getApiErrorMessage } from "@/utils/api";
 import { getDashboardPath } from "@/utils/auth";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { Role } from "@/types";
 
 const ROLE_OPTIONS: Array<{
@@ -25,9 +30,6 @@ const ROLE_OPTIONS: Array<{
     description: "List your gear and earn from rentals.",
   },
 ];
-
-const inputClass =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -96,54 +98,47 @@ export default function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <fieldset className="space-y-3">
-        <legend className="text-sm font-medium text-zinc-700">
-          I want to join as
-        </legend>
+      <div className="space-y-2">
+        <Label>I want to join as</Label>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {ROLE_OPTIONS.map((option) => {
             const selected = role === option.value;
             return (
-              <label
+              <button
                 key={option.value}
-                className={`cursor-pointer rounded-lg border p-4 transition-colors ${
+                type="button"
+                aria-pressed={selected}
+                onClick={() => {
+                  setRole(option.value);
+                  setError(null);
+                }}
+                className={cn(
+                  "rounded-lg border p-4 text-left transition-colors",
                   selected
-                    ? "border-zinc-900 bg-zinc-900 text-white"
-                    : "border-zinc-300 bg-white hover:border-zinc-400"
-                }`}
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card hover:border-foreground/40"
+                )}
               >
-                <input
-                  type="radio"
-                  name="role"
-                  value={option.value}
-                  checked={selected}
-                  onChange={() => {
-                    setRole(option.value);
-                    setError(null);
-                  }}
-                  className="sr-only"
-                />
                 <span className="block text-sm font-semibold">
                   {option.label}
                 </span>
                 <span
-                  className={`mt-1 block text-xs ${
-                    selected ? "text-zinc-300" : "text-zinc-500"
-                  }`}
+                  className={cn(
+                    "mt-1 block text-xs",
+                    selected ? "text-primary-foreground/80" : "text-muted-foreground"
+                  )}
                 >
                   {option.description}
                 </span>
-              </label>
+              </button>
             );
           })}
         </div>
-      </fieldset>
+      </div>
 
-      <div className="space-y-1">
-        <label htmlFor="name" className="block text-sm font-medium text-zinc-700">
-          Full name
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="name">Full name</Label>
+        <Input
           id="name"
           type="text"
           required
@@ -151,16 +146,13 @@ export default function RegisterForm() {
           placeholder="John Doe"
           value={values.name}
           onChange={handleChange("name")}
-          className={inputClass}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1">
-          <label htmlFor="email" className="block text-sm font-medium text-zinc-700">
-            Email
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
             id="email"
             type="email"
             required
@@ -168,14 +160,11 @@ export default function RegisterForm() {
             placeholder="john@example.com"
             value={values.email}
             onChange={handleChange("email")}
-            className={inputClass}
           />
         </div>
-        <div className="space-y-1">
-          <label htmlFor="phone" className="block text-sm font-medium text-zinc-700">
-            Phone
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="phone">Phone</Label>
+          <Input
             id="phone"
             type="tel"
             required
@@ -183,17 +172,14 @@ export default function RegisterForm() {
             placeholder="+1234567890"
             value={values.phone}
             onChange={handleChange("phone")}
-            className={inputClass}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1">
-          <label htmlFor="password" className="block text-sm font-medium text-zinc-700">
-            Password
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
             id="password"
             type="password"
             required
@@ -202,17 +188,11 @@ export default function RegisterForm() {
             placeholder="At least 8 characters"
             value={values.password}
             onChange={handleChange("password")}
-            className={inputClass}
           />
         </div>
-        <div className="space-y-1">
-          <label
-            htmlFor="confirmPassword"
-            className="block text-sm font-medium text-zinc-700"
-          >
-            Confirm password
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirm password</Label>
+          <Input
             id="confirmPassword"
             type="password"
             required
@@ -221,65 +201,46 @@ export default function RegisterForm() {
             placeholder="Repeat your password"
             value={values.confirmPassword}
             onChange={handleChange("confirmPassword")}
-            className={inputClass}
           />
         </div>
       </div>
 
       {isProvider && (
-        <div className="space-y-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+        <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Business details
           </p>
-          <div className="space-y-1">
-            <label
-              htmlFor="businessName"
-              className="block text-sm font-medium text-zinc-700"
-            >
-              Business name
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="businessName">Business name</Label>
+            <Input
               id="businessName"
               type="text"
               required={isProvider}
               placeholder="Jane's Gear Shop"
               value={values.businessName}
               onChange={handleChange("businessName")}
-              className={inputClass}
             />
           </div>
-          <div className="space-y-1">
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-zinc-700"
-            >
-              Description
-            </label>
-            <textarea
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
               id="description"
               required={isProvider}
               rows={3}
               placeholder="Tell renters what you offer."
               value={values.description}
               onChange={handleChange("description")}
-              className={`${inputClass} resize-none`}
             />
           </div>
-          <div className="space-y-1">
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-zinc-700"
-            >
-              Address
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="address">Address</Label>
+            <Input
               id="address"
               type="text"
               required={isProvider}
               placeholder="123 Main St, City, Country"
               value={values.address}
               onChange={handleChange("address")}
-              className={inputClass}
             />
           </div>
         </div>
@@ -288,23 +249,19 @@ export default function RegisterForm() {
       {error && (
         <p
           role="alert"
-          className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
           {error}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full rounded-md bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isSubmitting} className="w-full">
         {isSubmitting ? "Creating account..." : "Create account"}
-      </button>
+      </Button>
 
-      <p className="text-center text-sm text-zinc-500">
+      <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-zinc-900 underline">
+        <Link href="/login" className="font-medium text-foreground underline">
           Sign in
         </Link>
       </p>

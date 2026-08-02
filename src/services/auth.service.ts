@@ -28,7 +28,9 @@ const logout = async (): Promise<void> => {
 };
 
 const getMe = async (): Promise<User> => {
-  const { data } = await api.get<APIResponse<User>>("/users/me");
+  const { data } = await api.get<APIResponse<User>>("/users/me", {
+    skipAuthRefresh: true,
+  });
   return data.data;
 };
 

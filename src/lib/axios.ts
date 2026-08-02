@@ -8,6 +8,12 @@ import type { APIResponse, RefreshTokenPayload } from "@/types";
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
 
+declare module "axios" {
+  interface AxiosRequestConfig {
+    skipAuthRefresh?: boolean;
+  }
+}
+
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
@@ -69,6 +75,7 @@ api.interceptors.response.use(
     if (
       status !== 401 ||
       originalRequest._retry ||
+      originalRequest.skipAuthRefresh ||
       isAuthEndpoint(originalRequest.url)
     ) {
       return Promise.reject(error);

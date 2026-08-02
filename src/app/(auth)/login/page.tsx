@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
 import LoginForm from "@/components/auth/LoginForm";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Sign in | GearUp",
+  title: "Sign in",
 };
 
 export default async function LoginPage({
@@ -14,16 +21,18 @@ export default async function LoginPage({
   const redirectTo = Array.isArray(redirect) ? redirect[0] : redirect;
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-zinc-50 px-4 py-12">
-      <div className="w-full max-w-md space-y-6 rounded-xl border border-zinc-200 bg-white p-8 shadow-sm">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-semibold text-zinc-900">Welcome back</h1>
-          <p className="text-sm text-zinc-500">
+    <div className="flex flex-1 items-center justify-center bg-muted/50 px-4 py-12">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardDescription>
             Sign in to manage your gear rentals.
-          </p>
-        </div>
-        <LoginForm redirectTo={redirectTo} />
-      </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LoginForm redirectTo={redirectTo} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

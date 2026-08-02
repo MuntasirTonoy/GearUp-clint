@@ -7,9 +7,9 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { getApiErrorMessage } from "@/utils/api";
 import { getDashboardPath } from "@/utils/auth";
-
-const inputClass =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const router = useRouter();
@@ -48,11 +48,9 @@ export default function LoginForm({ redirectTo }: { redirectTo?: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-1">
-        <label htmlFor="email" className="block text-sm font-medium text-zinc-700">
-          Email
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
           id="email"
           type="email"
           required
@@ -60,18 +58,12 @@ export default function LoginForm({ redirectTo }: { redirectTo?: string }) {
           placeholder="john@example.com"
           value={values.email}
           onChange={handleChange("email")}
-          className={inputClass}
         />
       </div>
 
-      <div className="space-y-1">
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Password
-        </label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input
           id="password"
           type="password"
           required
@@ -79,30 +71,28 @@ export default function LoginForm({ redirectTo }: { redirectTo?: string }) {
           placeholder="Your password"
           value={values.password}
           onChange={handleChange("password")}
-          className={inputClass}
         />
       </div>
 
       {error && (
         <p
           role="alert"
-          className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
           {error}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full rounded-md bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isSubmitting} className="w-full">
         {isSubmitting ? "Signing in..." : "Sign in"}
-      </button>
+      </Button>
 
-      <p className="text-center text-sm text-zinc-500">
+      <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-medium text-zinc-900 underline">
+        <Link
+          href="/register"
+          className="font-medium text-foreground underline"
+        >
           Create one
         </Link>
       </p>

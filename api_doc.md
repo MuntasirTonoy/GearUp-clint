@@ -1143,3 +1143,19 @@ Update platform settings.
 5. **Pagination:** List endpoints return `meta: { page, limit, total }`. Use these to build pagination UI.
 6. **Error Handling:** All errors return `{ success: false, message: "..." }`. Handle 401 (unauthorized), 403 (forbidden), 404 (not found), 409 (conflict/duplicate).
 7. **Webhook Routes:** `/payments/success` and `/payments/fail` use raw body parsing for Stripe signature verification -- do not send JSON to these endpoints from the frontend.
+
+## Frontend Endpoints in Use (gearup-clint)
+
+Reference of the endpoints the Next.js client currently calls, with the
+expected usage:
+
+| Endpoint | Method | Where | Notes |
+|---|---|---|---|
+| `/auth/register` | POST | `RegisterForm` | Body: `name, email, phone, password, role`, plus `businessName, description, address` for `PROVIDER`. Sets `accessToken` + `refreshToken` cookies. |
+| `/auth/login` | POST | `LoginForm` | Body: `email, password`. Sets both cookies. |
+| `/auth/logout` | POST | `SignOutButton`, navbar dropdown | Clears both cookies. |
+| `/auth/refresh-token` | POST | axios interceptor (on 401) | Uses `refreshToken` cookie; issues a new `accessToken`. |
+| `/users/me` | GET | `authStore.fetchMe` | Hydrates the navbar's auth state on mount. Called with `skipAuthRefresh: true` so anonymous visitors aren't redirected to `/login`. |
+| `/gears` | GET | home page `FeaturedGearGrid` | Public. Home calls `?limit=4` for the Featured Gear grid; page is `force-dynamic` so it is fetched per request. |
+| `/gears/:id` | GET | gear detail (placeholder) | Public. Future gear detail page. |
+

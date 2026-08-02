@@ -1,24 +1,31 @@
 import type { Metadata } from "next";
 import RegisterForm from "@/components/auth/RegisterForm";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Create account | GearUp",
+  title: "Create account",
 };
 
 export default function RegisterPage() {
   return (
-    <div className="flex flex-1 items-center justify-center bg-zinc-50 px-4 py-12">
-      <div className="w-full max-w-xl space-y-6 rounded-xl border border-zinc-200 bg-white p-8 shadow-sm">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-semibold text-zinc-900">
-            Create your account
-          </h1>
-          <p className="text-sm text-zinc-500">
+    <div className="flex flex-1 items-center justify-center bg-muted/50 px-4 py-12">
+      <Card className="w-full max-w-xl">
+        <CardHeader>
+          <CardTitle className="text-2xl">Create your account</CardTitle>
+          <CardDescription>
             Join GearUp as a customer or start listing your gear as a provider.
-          </p>
-        </div>
-        <RegisterForm />
-      </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RegisterForm />
+        </CardContent>
+      </Card>
     </div>
   );
 }
