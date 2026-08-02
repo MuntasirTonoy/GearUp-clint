@@ -12,6 +12,7 @@ client**; the API lives in `../GearUp-backend` (Express + Prisma + PostgreSQL).
 - Next.js 16 (App Router) + TypeScript
 - Tailwind CSS v4
 - axios (HTTP client)
+- Zustand (global client state)
 - Backend base URL: `http://localhost:5000/api` (see `.env.local`, key
   `NEXT_PUBLIC_API_URL`)
 
@@ -41,8 +42,9 @@ src/
 ├── app/                     # App Router routes (layout.tsx, page.tsx, globals.css)
 │   ├── (auth)/              # login, register, forgot-password
 │   ├── (marketing)/         # public pages (home, browse gear, gear detail)
-│   └── (dashboard)/         # authenticated areas (customer/provider/admin)
+│   └── dashboard/           # protected areas (/dashboard/customer|provider|admin)
 ├── components/
+│   ├── auth/                # RegisterForm, LoginForm (client components)
 │   ├── ui/                  # reusable primitives (Button, Input, Modal, ...)
 │   └── shared/              # app-level blocks (Navbar, Footer, GearCard, ...)
 ├── hooks/                   # custom React hooks (useAuth, useDebounce, ...)
@@ -54,6 +56,7 @@ src/
 ├── types/
 │   └── index.ts             # shared TS interfaces (User, Gear, Rental, APIResponse, ...)
 └── utils/                   # pure helpers (formatting, date math, validators, ...)
+proxy.ts                     # request proxy (Next.js 16 name for middleware)
 ```
 
 ## API Conventions
@@ -79,6 +82,33 @@ src/
   uses `profilePhoto`, single upload uses `image`; send as `multipart/form-data`.
 - **Webhooks:** `/payments/success` and `/payments/fail` are Stripe webhooks
   (raw body). Never call them from the client with JSON.
+
+## Authentication & Role-Based Access
+
+- **Store:** `src/store/authStore.ts` (Zustand) holds `user`, `status`
+  (`idle | loading | authenticated | unauthenticated`), and actions
+  `register`, `login`, `logout`, `fetchMe`. Login/register call the auth API,
+  store the returned `accessToken` via `setAccessToken()`, then hydrate the
+  full profile with `GET /users/me`. Components read role-based UI state from
+  this store via `useAuthStore` selectors.
+- **Auth service:** `src/services/auth.service.ts` exposes typed wrappers for
+  `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, and
+  `GET /users/me`. All use the shared axios instance (cookies sent
+  automatically).
+- **Forms:** `src/components/auth/RegisterForm.tsx` (role selector
+  Customer/Provider; Provider reveals `businessName`, `description`,
+  `address`) and `src/components/auth/LoginForm.tsx`. On success both redirect
+  to `/dashboard/<role>` via `getDashboardPath()` in `src/utils/auth.ts`.
+  Errors are surfaced through `getApiErrorMessage()` in `src/utils/api.ts`.
+- **Route protection (`src/proxy.ts`):** Next.js 16 renamed `middleware.ts` to
+  `proxy.ts` (deprecated `middleware` is NOT used). It protects
+  `/dashboard/customer`, `/dashboard/provider`, `/dashboard/admin` based on
+  the presence of the `accessToken` cookie and the `role` claim decoded from
+  the JWT payload (optimistic check only — the backend is the source of
+  truth for authorization). Unauthenticated users are redirected to `/login`
+  with a `?redirect=` query param; users on the wrong dashboard are redirected
+  to their own role dashboard. Authenticated users visiting `/login` or
+  `/register` are sent to their dashboard.
 
 ## Enums
 
