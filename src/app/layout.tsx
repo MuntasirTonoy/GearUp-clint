@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   },
   description:
     "Rent sports and outdoor gear on demand from trusted local providers.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 import Navbar from "@/components/shared/Navbar";
