@@ -1,4 +1,4 @@
-import { CreditCard } from "lucide-react";
+import PaymentHistoryList from "@/components/dashboard/PaymentHistoryList";
 
 export default function CustomerPaymentsPage() {
   return (
@@ -7,13 +7,7 @@ export default function CustomerPaymentsPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         View your payment history and transaction details.
       </p>
-      <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
-        <CreditCard className="size-10 text-muted-foreground" />
-        <p className="font-semibold">Payment history coming soon</p>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          We&apos;re building out payment tracking. For now, visit your dashboard to see active rentals.
-        </p>
-      </div>
+      <PaymentHistoryList />
     </div>
   );
 }

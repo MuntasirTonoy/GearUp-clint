@@ -1,8 +1,8 @@
 export const formatCurrency = (
   amount: number,
-  currency = "USD"
+  currency = "BDT"
 ): string =>
-  new Intl.NumberFormat("en-US", {
+  new Intl.NumberFormat("en-BD", {
     style: "currency",
     currency,
     maximumFractionDigits: amount % 1 === 0 ? 0 : 2,

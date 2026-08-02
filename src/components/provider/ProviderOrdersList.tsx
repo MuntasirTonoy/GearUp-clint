@@ -43,17 +43,28 @@ interface RentalAction {
   className?: string;
 }
 
-const ACTION_MAP: Partial<Record<RentalStatus, RentalAction[]>> = {
-  PLACED: [
-    { label: "Confirm", status: "CONFIRMED", variant: "default", className: "bg-emerald-500 text-white hover:bg-emerald-400" },
-    { label: "Reject", status: "CANCELLED", variant: "destructive" },
-  ],
-  PAID: [
-    { label: "Mark Picked Up", status: "PICKED_UP", variant: "default", className: "bg-blue-500 text-white hover:bg-blue-400" },
-  ],
-  PICKED_UP: [
-    { label: "Mark Returned", status: "RETURNED", variant: "default", className: "bg-green-500 text-white hover:bg-green-400" },
-  ],
+const getActions = (rental: Rental): RentalAction[] => {
+  if (rental.status === 'PLACED') {
+    return [
+      { label: "Confirm", status: "CONFIRMED", variant: "default", className: "bg-emerald-500 text-white hover:bg-emerald-400" },
+      { label: "Reject", status: "CANCELLED", variant: "destructive" },
+    ];
+  }
+  if (rental.status === 'CONFIRMED') {
+    const actions: RentalAction[] = [
+      { label: "Reject", status: "CANCELLED", variant: "destructive" },
+    ];
+    if (rental.payment?.paymentStatus === 'PAID') {
+      actions.unshift({ label: "Mark Picked Up", status: "PICKED_UP", variant: "default", className: "bg-blue-500 text-white hover:bg-blue-400" });
+    }
+    return actions;
+  }
+  if (rental.status === 'PICKED_UP') {
+    return [
+      { label: "Mark Returned", status: "RETURNED", variant: "default", className: "bg-green-500 text-white hover:bg-green-400" },
+    ];
+  }
+  return [];
 };
 
 export default function ProviderOrdersList() {
@@ -180,6 +191,9 @@ export default function ProviderOrdersList() {
               Amount
             </th>
             <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">
+              Payment
+            </th>
+            <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">
               Status
             </th>
             <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">
@@ -189,7 +203,7 @@ export default function ProviderOrdersList() {
         </thead>
         <tbody>
           {rentals.map((rental) => {
-            const actions = ACTION_MAP[rental.status] ?? [];
+            const actions = getActions(rental);
             const pending = pendingIds.has(rental.id);
             return (
               <tr
@@ -227,7 +241,19 @@ export default function ProviderOrdersList() {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right font-semibold text-foreground">
-                  {formatCurrency(rental.totalAmount)}
+                  {formatCurrency(rental.orderAmount)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <Badge
+                    className={
+                      rental.payment?.paymentStatus === 'PAID' ? 'bg-emerald-500 text-white' :
+                      rental.payment?.paymentStatus === 'PENDING' ? 'bg-yellow-500 text-white' :
+                      rental.payment?.paymentStatus === 'REFUNDED' ? 'bg-orange-500 text-white' :
+                      'bg-gray-200 text-gray-700'
+                    }
+                  >
+                    {rental.payment?.paymentStatus ?? 'UNPAID'}
+                  </Badge>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Badge
@@ -238,6 +264,9 @@ export default function ProviderOrdersList() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap justify-end gap-2">
+                    {rental.status === 'CONFIRMED' && rental.payment?.paymentStatus !== 'PAID' && (
+                      <span className="text-xs text-amber-600 font-medium self-center mr-2">Awaiting Payment</span>
+                    )}
                     {actions.map((action) => (
                       <Button
                         key={action.status}

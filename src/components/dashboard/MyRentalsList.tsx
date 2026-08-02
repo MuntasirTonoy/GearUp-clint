@@ -35,7 +35,7 @@ export default function MyRentalsList() {
 
   const fetchRentals = useCallback(async (): Promise<Rental[]> => {
     const result = await RentalService.getMyRentals();
-    return result.rentals.filter((r) => r.status !== "PLACED");
+    return result.rentals;
   }, []);
 
   useEffect(() => {
@@ -139,26 +139,40 @@ function RentalRow({ rental }: { rental: Rental }) {
               {rental.totalDays} day{rental.totalDays === 1 ? "" : "s"}
             </span>
             <span className="font-semibold text-foreground">
-              {formatCurrency(rental.totalAmount)}
+              {formatCurrency(rental.orderAmount)}
             </span>
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {rental.payment?.paymentStatus === "PAID" && (
+            <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20">
+              Paid
+            </Badge>
+          )}
+
           <Badge
             className={
               rental.status === "CONFIRMED"
                 ? "bg-blue-500 text-white"
-                : rental.status === "PAID"
-                  ? "bg-purple-500 text-white"
-                  : rental.status === "PICKED_UP"
-                    ? "bg-green-500 text-white"
-                    : undefined
+                : rental.status === "PICKED_UP"
+                  ? "bg-green-500 text-white"
+                  : undefined
             }
           >
             {STATUS_LABELS[rental.status]}
           </Badge>
 
-          {rental.status === "RETURNED" && (
+          {(rental.status === "PLACED" || rental.status === "CONFIRMED") && 
+           rental.payment?.paymentStatus !== "PAID" && (
+            <Link
+              href={`/checkout/${rental.id}`}
+              className={cn(buttonVariants({ size: "sm" }), "bg-emerald-500 text-white hover:bg-emerald-400")}
+            >
+              Pay Now
+            </Link>
+          )}
+
+          {(rental.status === "RETURNED" || rental.payment?.paymentStatus === "PAID") && (
             <Button
               type="button"
               variant="outline"

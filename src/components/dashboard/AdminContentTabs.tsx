@@ -206,7 +206,7 @@ export default function AdminContentTabs() {
                       <td className="p-4 align-middle text-xs">
                         {new Date(rental.startDate).toLocaleDateString()} - {new Date(rental.endDate).toLocaleDateString()}
                       </td>
-                      <td className="p-4 align-middle font-semibold">{formatCurrency(rental.totalAmount)}</td>
+                      <td className="p-4 align-middle font-semibold">{formatCurrency(rental.orderAmount)}</td>
                       <td className="p-4 align-middle">
                         <Badge variant="secondary">{rental.status}</Badge>
                       </td>

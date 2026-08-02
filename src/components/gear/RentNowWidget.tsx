@@ -41,6 +41,7 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,7 +54,7 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
             DAY_MS
         )
       : 0;
-  const totalAmount = totalDays * gear.dailyRentalPrice;
+  const orderAmount = totalDays * gear.dailyRentalPrice * quantity;
 
   const handleStartChange = (value: string) => {
     setStartDate(value);
@@ -74,6 +75,10 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
       setError("The end date must be after the start date.");
       return;
     }
+    if (quantity > gear.quantity || quantity < 1) {
+      setError(`Please enter a valid quantity between 1 and ${gear.quantity}.`);
+      return;
+    }
     setError(null);
 
     const state = useAuthStore.getState();
@@ -92,6 +97,7 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
         gearId: gear.id,
         startDate,
         endDate,
+        quantity,
       });
 
       if (actionType === "CART") {
@@ -169,9 +175,26 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
           />
         </div>
 
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Package className="size-4" />
-          {gear.quantity} available
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="quantity">
+            <span className="inline-flex items-center gap-1.5">
+              <Package className="size-4 text-muted-foreground" />
+              Quantity
+            </span>
+          </Label>
+          <Input
+            id="quantity"
+            type="number"
+            min={1}
+            max={gear.quantity}
+            value={quantity}
+            onChange={(e) => {
+              const val = Math.min(Math.max(1, Number(e.target.value)), gear.quantity);
+              setQuantity(val);
+              setError(null);
+            }}
+          />
+          <p className="text-xs text-muted-foreground">{gear.quantity} units available</p>
         </div>
 
         {error && (
@@ -189,9 +212,13 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
             <span className="font-semibold tabular-nums">{totalDays}</span>
           </div>
           <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Quantity</span>
+            <span className="font-semibold tabular-nums">{quantity}</span>
+          </div>
+          <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Total</span>
             <span className="font-bold tabular-nums">
-              {formatCurrency(totalAmount)}
+              {formatCurrency(orderAmount)}
             </span>
           </div>
         </div>

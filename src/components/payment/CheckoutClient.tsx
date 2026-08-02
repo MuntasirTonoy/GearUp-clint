@@ -32,10 +32,7 @@ const STATUS_MESSAGES: Record<
   { title: string; body: string } | null
 > = {
   CONFIRMED: null,
-  PLACED: {
-    title: "Awaiting provider confirmation",
-    body: "This booking is still awaiting confirmation from the provider. You'll be able to pay once it's confirmed.",
-  },
+  PLACED: null,
   PAID: {
     title: "Already paid",
     body: "This booking has already been paid for. You can track it from your dashboard.",
@@ -138,6 +135,7 @@ export default function CheckoutClient() {
   }
 
   const gearName = rental.gear?.name ?? "Gear rental";
+  const showPrePaymentWarning = rental.status === 'PLACED' && !rental.payment;
 
   return (
     <div className="mx-auto grid w-full max-w-4xl gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -155,8 +153,19 @@ export default function CheckoutClient() {
                 </p>
               )}
             </div>
-            <Badge className="bg-emerald-500 text-white">Confirmed</Badge>
+            <Badge className={rental.status === 'CONFIRMED' ? "bg-emerald-500 text-white" : "bg-yellow-500 text-white"}>
+              {rental.status === 'CONFIRMED' ? "Confirmed" : "Placed"}
+            </Badge>
           </div>
+
+          {showPrePaymentWarning && (
+            <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-400 flex items-start gap-3">
+              <AlertTriangle className="size-5 shrink-0 mt-0.5" />
+              <p>
+                <strong>Awaiting provider confirmation:</strong> This order hasn&apos;t been confirmed by the provider yet. You can still pay now — some providers require pre-payment before confirming.
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -196,7 +205,7 @@ export default function CheckoutClient() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Total</span>
               <span className="text-lg font-bold tabular-nums">
-                {formatCurrency(rental.totalAmount)}
+                {formatCurrency(rental.orderAmount)}
               </span>
             </div>
           </div>

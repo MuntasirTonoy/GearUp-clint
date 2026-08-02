@@ -98,7 +98,8 @@ export interface Rental {
   startDate: string;
   endDate: string;
   totalDays: number;
-  totalAmount: number;
+  orderedQuantity: number;
+  orderAmount: number;
   status: RentalStatus;
   createdAt: string;
   updatedAt: string;
@@ -120,7 +121,7 @@ export interface Payment {
   paymentMethod: string;
   createdAt: string;
   updatedAt: string;
-  rental?: Pick<Rental, "id" | "gearId" | "totalAmount" | "status" | "startDate" | "endDate"> & {
+  rental?: Pick<Rental, "id" | "gearId" | "orderAmount" | "status" | "startDate" | "endDate"> & {
     gear?: Pick<Gear, "id" | "name" | "images">;
   };
 }
@@ -173,6 +174,7 @@ export interface CreateRentalPayload {
   gearId: string;
   startDate: string;
   endDate: string;
+  quantity?: number;
 }
 
 export interface PaymentSession {

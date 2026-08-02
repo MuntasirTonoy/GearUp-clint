@@ -125,7 +125,7 @@ export default async function GearDetailPage({
             </section>
 
             {gear.provider && (
-              <section className="rounded-xl border border-border bg-card p-5">
+            <section className="rounded-xl border border-border bg-card p-5">
                 <h2 className="text-lg font-bold">Provider</h2>
                 <div className="mt-4 flex items-start gap-3">
                   <Avatar className="size-11">
@@ -139,6 +139,11 @@ export default async function GearDetailPage({
                   </Avatar>
                   <div className="min-w-0 space-y-1">
                     <p className="font-semibold">{providerLabel}</p>
+                    {gear.provider.businessName && gear.provider.businessName !== providerLabel && (
+                      <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                        {gear.provider.businessName}
+                      </p>
+                    )}
                     {gear.provider.address && (
                       <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         <MapPin className="size-4 shrink-0" />

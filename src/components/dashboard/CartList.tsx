@@ -114,7 +114,7 @@ export default function CartList() {
     );
   }
 
-  const totalPayable = rentals.reduce((acc, curr) => acc + curr.totalAmount, 0);
+  const totalPayable = rentals.reduce((acc, curr) => acc + curr.orderAmount, 0);
 
   return (
     <div className="space-y-8">
@@ -181,7 +181,7 @@ function CartRow({ rental, onCancel }: { rental: Rental; onCancel: () => void })
             {rental.totalDays} day{rental.totalDays === 1 ? "" : "s"}
           </span>
           <span className="font-semibold text-foreground">
-            {formatCurrency(rental.totalAmount)}
+            {formatCurrency(rental.orderAmount)}
           </span>
         </div>
       </div>
