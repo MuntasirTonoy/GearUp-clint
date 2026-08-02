@@ -42,12 +42,13 @@ client**; the API lives in `../GearUp-backend` (Express + Prisma + PostgreSQL).
 src/
 ├── app/                     # App Router routes (layout.tsx, page.tsx, globals.css)
 │   ├── (auth)/              # login, register, forgot-password
-│   ├── (marketing)/         # public pages (home, browse gear, gear detail) w/ shell layout
+│   ├── page.tsx             # home (public shell applied via PublicShell component)
+│   ├── gears/               # browse gear (/gears) + gear detail (/gears/[id])
 │   └── dashboard/           # protected areas (/dashboard/customer|provider|admin)
 ├── components/
 │   ├── auth/                # RegisterForm, LoginForm, SignOutButton (client components)
 │   ├── ui/                  # shadcn/ui primitives (generated; see components.json)
-│   └── shared/              # app-level blocks (Navbar, Footer, GearCard, GearGrid, skeletons)
+│   └── shared/              # app-level blocks (Navbar, Footer, PublicShell, GearCard, skeletons)
 ├── hooks/                   # custom React hooks (useAuth, useDebounce, ...)
 ├── lib/
 │   ├── axios.ts             # global axios instance + auth interceptors
@@ -122,9 +123,10 @@ proxy.ts                     # request proxy (Next.js 16 name for middleware)
 
 ## Public Shell & Landing Page
 
-- **Marketing layout (`src/app/(marketing)/layout.tsx`):** the public shell
-  (`Navbar` + `<main>` + `Footer`) wraps the home page, `/gears`, and
-  `/gears/[id]`. Auth pages and `/dashboard/*` render without the shell.
+- **Public shell (`src/components/shared/PublicShell.tsx`):** composes
+  `Navbar` + `<main>` + `Footer` as a server component. Public pages (`/`,
+  `/gears`, `/gears/[id]`) wrap their content in it. Auth pages and
+  `/dashboard/*` render without the shell.
 - **Navbar (`src/components/shared/Navbar.tsx`, client):** hydrates auth on
   mount via `fetchMe()` if the store is still `idle` (HTTP-only cookie sends
   itself). Shows a `Skeleton` while resolving; "Log in"/"Sign up" buttons when
@@ -133,7 +135,7 @@ proxy.ts                     # request proxy (Next.js 16 name for middleware)
   a hamburger mobile menu. `next/image` is used for avatar photos.
 - **Footer (`src/components/shared/Footer.tsx`):** logo, tagline, link
   columns, and a "Become a Provider" CTA.
-- **Home page (`src/app/(marketing)/page.tsx`):** dark Hero with the
+- **Home page (`src/app/page.tsx`):** dark Hero with the
   "Rent Sports & Outdoor Gear Instantly" CTA, then a "Featured Gear" section.
   The page is `export const dynamic = "force-dynamic"` so `GET /gears` is
   fetched per request (backend must be running).

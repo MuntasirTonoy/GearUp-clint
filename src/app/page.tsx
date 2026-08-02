@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import PublicShell from "@/components/shared/PublicShell";
 import FeaturedGearGrid from "@/components/shared/FeaturedGearGrid";
 import FeaturedGearSkeleton from "@/components/shared/FeaturedGearSkeleton";
 
@@ -9,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (
-    <>
+    <PublicShell>
       <section className="relative overflow-hidden bg-zinc-900 text-white">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-500/20 blur-3xl" />
@@ -81,6 +82,6 @@ export default function HomePage() {
           </Suspense>
         </div>
       </section>
-    </>
+    </PublicShell>
   );
 }
