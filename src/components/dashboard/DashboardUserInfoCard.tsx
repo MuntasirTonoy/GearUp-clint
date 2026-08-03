@@ -21,6 +21,7 @@ export default function DashboardUserInfoCard() {
   // Form states
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [businessName, setBusinessName] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -31,6 +32,7 @@ export default function DashboardUserInfoCard() {
       setPhone(user.phone || "");
       setSelectedFile(null);
       setPreviewUrl(user.profilePhoto || null);
+      setBusinessName(user.provider?.businessName || "");
     }
   };
 
@@ -58,6 +60,10 @@ export default function DashboardUserInfoCard() {
       toast.error("Name is required");
       return;
     }
+    if (user?.role === "PROVIDER" && !businessName.trim()) {
+      toast.error("Business name is required");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -65,6 +71,9 @@ export default function DashboardUserInfoCard() {
       formData.append("name", name);
       if (phone.trim()) formData.append("phone", phone);
       if (selectedFile) formData.append("profilePhoto", selectedFile);
+      if (user?.role === "PROVIDER" && businessName.trim()) {
+        formData.append("businessName", businessName.trim());
+      }
 
       await updateProfile(formData);
       toast.success("Profile updated successfully!");
@@ -211,6 +220,18 @@ export default function DashboardUserInfoCard() {
                           placeholder="+1 234 567 8900"
                         />
                       </div>
+                      {user.role === "PROVIDER" && (
+                        <div className="space-y-2">
+                          <Label htmlFor="businessName">Business Name</Label>
+                          <Input
+                            id="businessName"
+                            value={businessName}
+                            onChange={(e) => setBusinessName(e.target.value)}
+                            placeholder="My Sports Shop"
+                            required
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex justify-end gap-3 pt-2">

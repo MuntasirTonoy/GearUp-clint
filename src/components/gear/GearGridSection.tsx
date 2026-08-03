@@ -11,7 +11,7 @@ function buildQuery(searchParams: SearchParams): GearQueryParams {
     return Array.isArray(value) ? value[0] : value;
   };
 
-  const query: GearQueryParams = { limit: 12 };
+  const query: GearQueryParams = { limit: 6 };
 
   const searchTerm = get("searchTerm");
   const categoryId = get("categoryId");
