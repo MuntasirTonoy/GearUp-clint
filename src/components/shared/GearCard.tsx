@@ -47,23 +47,28 @@ export default function GearCard({ gear }: { gear: Gear }) {
         </div>
 
         <div className="flex flex-1 flex-col gap-1.5 p-4">
-          <h3 className="text-base font-semibold text-foreground">
+          <h3 className="text-base font-bold text-foreground">
             {gear.name}
           </h3>
           <p className="line-clamp-2 text-sm text-muted-foreground">
             {gear.description}
           </p>
-          <div className="mt-auto flex items-end justify-between pt-2">
+          {providerName && (
+              <span className="text-sm font-medium text-foreground">
+                {providerName}
+              </span>
+            )}
+          <div className="mt-auto flex items-center justify-between pt-2">
             <div>
               <span className="text-lg font-bold text-foreground">
                 {formatCurrency(gear.dailyRentalPrice)}
               </span>
-              <span className="text-sm text-muted-foreground">/day</span>
+              <span className="text-xs text-muted-foreground"> /day</span>
             </div>
-            {providerName && (
-              <span className="text-xs font-medium text-muted-foreground">
-                {providerName}
-              </span>
+            {isAvailable && gear.quantity > 0 && (
+              <Badge className="bg-orange-500 text-white font-medium text-[11px] px-2 py-0.5 rounded-full">
+                {gear.quantity} in stock
+              </Badge>
             )}
           </div>
         </div>

@@ -12,6 +12,7 @@ import {
   Database,
   Layers,
   ShoppingCart,
+  Banknote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ const NAV_CONFIGS = {
     { href: "/dashboard/provider/orders", label: "Orders", icon: ClipboardList },
     { href: "/dashboard/provider/gears", label: "My Gear", icon: Package },
     { href: "/dashboard/provider/gear/new", label: "Add Gear", icon: Plus },
+    { href: "/dashboard/provider/earnings", label: "Earnings", icon: Banknote },
   ],
   admin: [
     { href: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },

@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { formatCurrency } from "@/utils/format";
 import { PaymentService } from "@/services/payment.service";
 import type { Payment } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const formatDate = (value: string) =>
@@ -27,7 +25,12 @@ export default function PaymentHistoryList() {
     let active = true;
     PaymentService.getMyPayments()
       .then((data) => {
-        if (active) setPayments(data);
+        if (active) {
+          const successPayments = data.filter(
+            (p) => p.paymentStatus === "PAID" || p.paymentStatus === "REFUNDED"
+          );
+          setPayments(successPayments);
+        }
       })
       .catch(() => {
         // error handling omitted for brevity, can show error state
@@ -113,15 +116,6 @@ export default function PaymentHistoryList() {
                     {payment.paymentStatus}
                   </Badge>
                 </div>
-                
-                {payment.paymentStatus === "PENDING" && payment.rental && (
-                  <Link
-                    href={`/checkout/${payment.rentalId}`}
-                    className={cn(buttonVariants({ size: "sm" }), "mt-2")}
-                  >
-                    Pay Now
-                  </Link>
-                )}
               </div>
             </div>
           </CardContent>

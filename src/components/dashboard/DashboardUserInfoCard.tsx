@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getApiErrorMessage } from "@/utils/api";
+import ImageCropperModal from "@/components/shared/ImageCropperModal";
 
 export default function DashboardUserInfoCard() {
   const { user, status, updateProfile } = useAuthStore();
@@ -33,11 +34,21 @@ export default function DashboardUserInfoCard() {
     }
   };
 
+  const [filesToCrop, setFilesToCrop] = useState<File[]>([]);
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      setFilesToCrop([file]);
+      setIsCropperOpen(true);
+    }
+  };
+
+  const handleCropComplete = (croppedFiles: File[]) => {
+    if (croppedFiles[0]) {
+      setSelectedFile(croppedFiles[0]);
+      setPreviewUrl(URL.createObjectURL(croppedFiles[0]));
     }
   };
 
@@ -113,9 +124,14 @@ export default function DashboardUserInfoCard() {
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                {user.name}
+                {user.role === "PROVIDER" && user.provider ? user.provider.businessName : user.name}
               </h2>
-              <div className="mt-1 flex items-center gap-2">
+              {user.role === "PROVIDER" && user.provider && (
+                <p className="text-sm font-medium text-muted-foreground mt-0.5">
+                  Owner: {user.name}
+                </p>
+              )}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
                 <Badge
                   variant="secondary"
                   className="bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20"
@@ -219,6 +235,15 @@ export default function DashboardUserInfoCard() {
                     </div>
                   </form>
                 </div>
+                
+                <ImageCropperModal
+                  files={filesToCrop}
+                  isOpen={isCropperOpen}
+                  onClose={() => setIsCropperOpen(false)}
+                  onCropComplete={handleCropComplete}
+                  defaultAspect={1}
+                  title="Crop Profile Photo"
+                />
               </div>
             )}
           </div>
@@ -236,18 +261,10 @@ export default function DashboardUserInfoCard() {
             )}
             
             {user.role === "PROVIDER" && user.provider && (
-              <>
-                <div className="flex items-center gap-2">
-                  <Briefcase className="size-4 text-orange-500" />
-                  <span className="font-medium text-foreground">
-                    {user.provider.businessName}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="size-4 text-orange-500" />
-                  <span className="truncate">{user.provider.address}</span>
-                </div>
-              </>
+              <div className="flex items-center gap-2">
+                <MapPin className="size-4 text-orange-500" />
+                <span className="truncate">{user.provider.address}</span>
+              </div>
             )}
           </div>
         </div>

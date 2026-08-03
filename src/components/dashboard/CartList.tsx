@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { CalendarDays, CreditCard, Package, ShoppingCart } from "lucide-react";
+import { CalendarDays, CreditCard, Package, ShoppingCart, RefreshCw } from "lucide-react";
 import { RentalService } from "@/services/rental.service";
 import { PaymentService } from "@/services/payment.service";
 import { formatCurrency } from "@/utils/format";
@@ -25,6 +25,7 @@ export default function CartList() {
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isBulkPaying, setIsBulkPaying] = useState(false);
 
   const fetchRentals = useCallback(async (): Promise<Rental[]> => {
     const result = await RentalService.getMyRentals();
@@ -68,6 +69,22 @@ export default function CartList() {
       setRentals((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
       toast.error(getApiErrorMessage(err));
+    }
+  };
+
+  const handleBulkPay = async () => {
+    if (rentals.length === 0) return;
+    setIsBulkPaying(true);
+    try {
+      const rentalIds = rentals.map((r) => r.id);
+      toast.loading("Redirecting to bulk payment...", { id: "bulk-pay" });
+      const session = await PaymentService.initiateBulkPayment(rentalIds);
+      toast.dismiss("bulk-pay");
+      window.location.href = session.url;
+    } catch (err) {
+      toast.dismiss("bulk-pay");
+      toast.error(getApiErrorMessage(err));
+      setIsBulkPaying(false);
     }
   };
 
@@ -119,19 +136,40 @@ export default function CartList() {
   return (
     <div className="space-y-8">
       <section>
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
           <div>
             <h2 className="text-xl font-bold flex items-center gap-2">
               <Package className="size-5" />
-              Pending Payments
+              Cart Summary
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              You must checkout these items individually.
+              Pay for all rentals at once or check out individual items below.
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Total Payable</p>
-            <p className="text-2xl font-bold text-emerald-600">{formatCurrency(totalPayable)}</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 self-stretch sm:self-auto justify-between">
+            <div className="text-left sm:text-right">
+              <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Total Payable</p>
+              <p className="text-2xl font-bold text-emerald-600">{formatCurrency(totalPayable)}</p>
+            </div>
+            <Button
+              type="button"
+              size="lg"
+              onClick={handleBulkPay}
+              disabled={isBulkPaying}
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+            >
+              {isBulkPaying ? (
+                <>
+                  <RefreshCw className="size-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="size-5" />
+                  Pay All Items
+                </>
+              )}
+            </Button>
           </div>
         </div>
         
@@ -169,9 +207,14 @@ function CartRow({ rental, onCancel }: { rental: Rental; onCancel: () => void })
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <p className="truncate font-semibold">
-          {rental.gear?.name ?? "Gear rental"}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <span className="truncate font-semibold text-foreground">
+            {rental.gear?.name ?? "Gear rental"}
+          </span>
+          <Badge variant="secondary" className="rounded-full px-1.5 py-0 text-[10px] font-semibold bg-orange-500/10 text-orange-600 border border-orange-500/20 shrink-0">
+            {rental.orderedQuantity}
+          </Badge>
+        </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <CalendarDays className="size-4" />
@@ -186,7 +229,7 @@ function CartRow({ rental, onCancel }: { rental: Rental; onCancel: () => void })
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <Badge className="bg-yellow-400 text-black">Placed</Badge>
+        <Badge className="bg-yellow-400 text-black">Order Placed</Badge>
         <Button
           type="button"
           variant="outline"

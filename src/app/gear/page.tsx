@@ -18,6 +18,8 @@ export default async function GearBrowsePage({
 }) {
   const params = await searchParams;
 
+  const filterKey = JSON.stringify(params);
+
   return (
     <PublicShell>
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
@@ -33,7 +35,7 @@ export default async function GearBrowsePage({
             <GearFilters />
           </aside>
           <div className="min-w-0 flex-1">
-            <Suspense fallback={<GearGridSkeleton />}>
+            <Suspense key={filterKey} fallback={<GearGridSkeleton />}>
               <GearGridSection searchParams={params} />
             </Suspense>
           </div>

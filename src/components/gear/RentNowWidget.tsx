@@ -187,11 +187,17 @@ export default function RentNowWidget({ gear }: { gear: RentNowGear }) {
             type="number"
             min={1}
             max={gear.quantity}
-            value={quantity}
+            value={quantity === 0 ? "" : quantity}
             onChange={(e) => {
-              const val = Math.min(Math.max(1, Number(e.target.value)), gear.quantity);
+              const val = e.target.value === "" ? 0 : parseInt(e.target.value, 10);
               setQuantity(val);
-              setError(null);
+              if (val > gear.quantity) {
+                setError(`Only ${gear.quantity} unit${gear.quantity === 1 ? "" : "s"} available in stock.`);
+              } else if (val < 1 && e.target.value !== "") {
+                setError("Quantity must be at least 1.");
+              } else {
+                setError(null);
+              }
             }}
           />
           <p className="text-xs text-muted-foreground">{gear.quantity} units available</p>

@@ -13,12 +13,21 @@ import { cn } from "@/lib/utils";
 import ReviewModal from "./ReviewModal";
 
 const STATUS_LABELS: Record<RentalStatus, string> = {
-  PLACED: "Placed",
+  PLACED: "Order Placed",
+  PAID: "Payment Received",
   CONFIRMED: "Confirmed",
-  PAID: "Paid",
   CANCELLED: "Cancelled",
-  PICKED_UP: "Picked up",
+  PICKED_UP: "Picked Up",
   RETURNED: "Returned",
+};
+
+const STATUS_COLORS: Record<RentalStatus, string> = {
+  PLACED: "bg-yellow-400 text-black",
+  PAID: "bg-amber-500 text-white",
+  CONFIRMED: "bg-blue-500 text-white",
+  CANCELLED: "bg-red-500 text-white",
+  PICKED_UP: "bg-green-500 text-white",
+  RETURNED: "bg-gray-300 text-black",
 };
 
 const formatDate = (value: string) =>
@@ -127,9 +136,17 @@ function RentalRow({ rental }: { rental: Rental }) {
     <>
       <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="truncate font-semibold">
-            {rental.gear?.name ?? "Gear rental"}
-          </p>
+          <div className="flex items-center gap-1.5">
+            <Link
+              href={`/gear/${rental.gearId}`}
+              className="truncate font-semibold text-foreground hover:text-orange-500 hover:underline transition-colors"
+            >
+              {rental.gear?.name ?? "Gear rental"}
+            </Link>
+            <Badge variant="secondary" className="rounded-full px-1.5 py-0 text-[10px] font-semibold bg-orange-500/10 text-orange-600 border border-orange-500/20 shrink-0">
+              {rental.orderedQuantity}
+            </Badge>
+          </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <CalendarDays className="size-4" />
@@ -144,26 +161,12 @@ function RentalRow({ rental }: { rental: Rental }) {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {rental.payment?.paymentStatus === "PAID" && (
-            <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20">
-              Paid
-            </Badge>
-          )}
-
-          <Badge
-            className={
-              rental.status === "CONFIRMED"
-                ? "bg-blue-500 text-white"
-                : rental.status === "PICKED_UP"
-                  ? "bg-green-500 text-white"
-                  : undefined
-            }
-          >
+          <Badge className={STATUS_COLORS[rental.status]}>
             {STATUS_LABELS[rental.status]}
           </Badge>
 
-          {(rental.status === "PLACED" || rental.status === "CONFIRMED") && 
-           rental.payment?.paymentStatus !== "PAID" && (
+          {/* Pay Now: only show if order is placed and not yet paid */}
+          {rental.status === "PLACED" && (
             <Link
               href={`/checkout/${rental.id}`}
               className={cn(buttonVariants({ size: "sm" }), "bg-emerald-500 text-white hover:bg-emerald-400")}
@@ -172,7 +175,8 @@ function RentalRow({ rental }: { rental: Rental }) {
             </Link>
           )}
 
-          {(rental.status === "RETURNED" || rental.payment?.paymentStatus === "PAID") && (
+          {/* Leave Review: only after returned */}
+          {rental.status === "RETURNED" && (
             <Button
               type="button"
               variant="outline"
@@ -192,7 +196,7 @@ function RentalRow({ rental }: { rental: Rental }) {
           open={showReview}
           onClose={() => setShowReview(false)}
           gearName={rental.gear.name}
-          gearId={rental.gear.id}
+          gearId={rental.gearId}
         />
       )}
     </>

@@ -16,6 +16,7 @@ import { StyledSelect } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileUp, Loader2 } from "lucide-react";
+import ImageCropperModal from "@/components/shared/ImageCropperModal";
 
 // Force Turbopack recompile
 export default function EditGearPage() {
@@ -93,6 +94,9 @@ export default function EditGearPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const [filesToCrop, setFilesToCrop] = useState<File[]>([]);
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
+
   const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const totalCurrent = existingImages.length + formData.images.length;
@@ -100,9 +104,15 @@ export default function EditGearPage() {
       toast.error(`You can only have up to 5 images total. You can add ${Math.max(0, 5 - totalCurrent)} more.`);
       return;
     }
-    setFormData((prev) => ({ ...prev, images: [...prev.images, ...files] }));
+    if (files.length > 0) {
+      setFilesToCrop(files);
+      setIsCropperOpen(true);
+    }
+  };
 
-    const urls = files.map((file) => URL.createObjectURL(file));
+  const handleCropComplete = (croppedFiles: File[]) => {
+    setFormData((prev) => ({ ...prev, images: [...prev.images, ...croppedFiles] }));
+    const urls = croppedFiles.map((file) => URL.createObjectURL(file));
     setPreviewUrls((prev) => [...prev, ...urls]);
   };
 
@@ -396,6 +406,15 @@ export default function EditGearPage() {
           </div>
         </CardContent>
       </Card>
+
+      <ImageCropperModal
+        files={filesToCrop}
+        isOpen={isCropperOpen}
+        onClose={() => setIsCropperOpen(false)}
+        onCropComplete={handleCropComplete}
+        defaultAspect={4 / 3}
+        title="Crop Gear Images"
+      />
     </div>
   );
 }

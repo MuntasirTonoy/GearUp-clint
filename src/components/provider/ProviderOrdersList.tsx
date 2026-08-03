@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CalendarDays, Package, RefreshCw } from "lucide-react";
+import { CalendarDays, Package, RefreshCw, Check, X, Truck, RotateCcw } from "lucide-react";
 import { RentalService } from "@/services/rental.service";
 import { formatCurrency } from "@/utils/format";
 import { getApiErrorMessage } from "@/utils/api";
@@ -21,9 +21,9 @@ const STATUS_LABELS: Record<RentalStatus, string> = {
 };
 
 const STATUS_COLORS: Partial<Record<RentalStatus, string>> = {
-  PLACED: "bg-yellow-400 text-black",
+  PLACED: "bg-gray-400 text-white",
+  PAID: "bg-amber-500 text-white",
   CONFIRMED: "bg-blue-500 text-white",
-  PAID: "bg-purple-500 text-white",
   PICKED_UP: "bg-green-500 text-white",
   CANCELLED: "bg-red-500 text-white",
   RETURNED: "bg-gray-300 text-black",
@@ -37,31 +37,34 @@ const formatDate = (value: string) =>
   });
 
 interface RentalAction {
-  label: string;
+  icon: React.ReactNode;
+  title: string;
   status: RentalStatus;
   variant: "default" | "outline" | "destructive";
   className?: string;
 }
 
 const getActions = (rental: Rental): RentalAction[] => {
+  // PLACED: customer hasn't paid yet — no provider action needed
   if (rental.status === 'PLACED') {
+    return [];
+  }
+  // PAID: customer has paid — provider can now confirm or cancel (triggers refund)
+  if (rental.status === 'PAID') {
     return [
-      { label: "Confirm", status: "CONFIRMED", variant: "default", className: "bg-emerald-500 text-white hover:bg-emerald-400" },
-      { label: "Reject", status: "CANCELLED", variant: "destructive" },
+      { icon: <Check className="size-4" />, title: "Confirm Order", status: "CONFIRMED", variant: "default", className: "bg-emerald-500 text-white hover:bg-emerald-400" },
+      { icon: <X className="size-4" />, title: "Reject & Refund", status: "CANCELLED", variant: "destructive" },
     ];
   }
   if (rental.status === 'CONFIRMED') {
-    const actions: RentalAction[] = [
-      { label: "Reject", status: "CANCELLED", variant: "destructive" },
+    return [
+      { icon: <Truck className="size-4" />, title: "Mark Picked Up", status: "PICKED_UP", variant: "default", className: "bg-blue-500 text-white hover:bg-blue-400" },
+      { icon: <X className="size-4" />, title: "Cancel", status: "CANCELLED", variant: "destructive" },
     ];
-    if (rental.payment?.paymentStatus === 'PAID') {
-      actions.unshift({ label: "Mark Picked Up", status: "PICKED_UP", variant: "default", className: "bg-blue-500 text-white hover:bg-blue-400" });
-    }
-    return actions;
   }
   if (rental.status === 'PICKED_UP') {
     return [
-      { label: "Mark Returned", status: "RETURNED", variant: "default", className: "bg-green-500 text-white hover:bg-green-400" },
+      { icon: <RotateCcw className="size-4" />, title: "Mark Returned", status: "RETURNED", variant: "default", className: "bg-green-500 text-white hover:bg-green-400" },
     ];
   }
   return [];
@@ -191,9 +194,6 @@ export default function ProviderOrdersList() {
               Amount
             </th>
             <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">
-              Payment
-            </th>
-            <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">
               Status
             </th>
             <th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground">
@@ -221,8 +221,11 @@ export default function ProviderOrdersList() {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="text-sm font-medium text-foreground">
-                    {rental.gear?.name ?? "Gear"}
+                  <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                    <span>{rental.gear?.name ?? "Gear"}</span>
+                    <Badge variant="secondary" className="rounded-full px-1.5 py-0 text-[10px] font-semibold bg-orange-500/10 text-orange-600 border border-orange-500/20 shrink-0">
+                      {rental.orderedQuantity} 
+                    </Badge>
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {rental.totalDays} day{rental.totalDays === 1 ? "" : "s"}
@@ -244,45 +247,28 @@ export default function ProviderOrdersList() {
                   {formatCurrency(rental.orderAmount)}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <Badge
-                    className={
-                      rental.payment?.paymentStatus === 'PAID' ? 'bg-emerald-500 text-white' :
-                      rental.payment?.paymentStatus === 'PENDING' ? 'bg-yellow-500 text-white' :
-                      rental.payment?.paymentStatus === 'REFUNDED' ? 'bg-orange-500 text-white' :
-                      'bg-gray-200 text-gray-700'
-                    }
-                  >
-                    {rental.payment?.paymentStatus ?? 'UNPAID'}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Badge
-                    className={STATUS_COLORS[rental.status]}
-                  >
+                  <Badge className={STATUS_COLORS[rental.status]}>
                     {STATUS_LABELS[rental.status]}
                   </Badge>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex flex-wrap justify-end gap-2">
-                    {rental.status === 'CONFIRMED' && rental.payment?.paymentStatus !== 'PAID' && (
-                      <span className="text-xs text-amber-600 font-medium self-center mr-2">Awaiting Payment</span>
-                    )}
+                  <div className="flex flex-wrap justify-end gap-1.5">
                     {actions.map((action) => (
                       <Button
                         key={action.status}
                         type="button"
                         variant={action.variant}
-                        size="sm"
-                        className={action.className}
+                        size="icon"
+                        className={`size-8 ${action.className ?? ""}`}
                         disabled={pending}
+                        title={action.title}
                         onClick={() =>
                           handleStatusChange(rental.id, action.status)
                         }
                       >
                         {pending ? (
                           <RefreshCw className="size-3.5 animate-spin" />
-                        ) : null}
-                        {action.label}
+                        ) : action.icon}
                       </Button>
                     ))}
                     {actions.length === 0 && (

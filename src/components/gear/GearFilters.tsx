@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/utils/format";
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 1000;
@@ -258,8 +259,8 @@ export default function GearFilters() {
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium">Price range</span>
         <div className="mb-1 flex items-center justify-between text-sm tabular-nums">
-          <span>${localMin}</span>
-          <span>${localMax}</span>
+          <span>{formatCurrency(localMin)}</span>
+          <span>{formatCurrency(localMax)}</span>
         </div>
         <div className="relative h-5">
           <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-muted" />
@@ -292,8 +293,8 @@ export default function GearFilters() {
           />
         </div>
         <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-          <span>${PRICE_MIN}</span>
-          <span>${PRICE_MAX}</span>
+          <span>{formatCurrency(PRICE_MIN)}</span>
+          <span>{formatCurrency(PRICE_MAX)}</span>
         </div>
       </div>
       </div>

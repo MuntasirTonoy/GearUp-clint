@@ -8,6 +8,7 @@ import {
   Plus,
   ChevronRight,
   ClipboardList,
+  Banknote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SignOutButton from "@/components/auth/SignOutButton";
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/provider/orders", label: "Incoming Orders", icon: ClipboardList },
   { href: "/dashboard/provider/gears", label: "My Gear", icon: Package },
   { href: "/dashboard/provider/gear/new", label: "Add New Gear", icon: Plus },
+  { href: "/dashboard/provider/earnings", label: "Earnings", icon: Banknote },
 ];
 
 export default function ProviderSidebar() {

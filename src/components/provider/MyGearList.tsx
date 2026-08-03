@@ -11,6 +11,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Trash2, Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from "@/utils/format";
 
 const STATUS_LABELS: Record<string, string> = {
   AVAILABLE: "Available",
@@ -183,7 +184,7 @@ export default function MyGearList() {
                   </div>
                 </td>
                 <td className="px-4 py-2 text-right font-mono">
-                  ${gear.dailyRentalPrice.toFixed(2)}
+                  {formatCurrency(gear.dailyRentalPrice)}
                 </td>
                 <td className="px-4 py-2 text-right">{gear.quantity}</td>
                 <td className="px-4 py-2 text-right">
