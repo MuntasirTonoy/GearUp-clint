@@ -4,13 +4,13 @@ export default function GearCardSkeleton() {
   return (
     <div className="flex flex-col overflow-hidden rounded-xl ring-1 ring-foreground/10">
       <Skeleton className="aspect-[4/3] rounded-none" />
-      <div className="flex flex-1 flex-col gap-2 p-4">
+      <div className="flex flex-1 flex-col gap-1.5 sm:gap-2 p-2.5 sm:p-4">
         <Skeleton className="h-4 w-2/3" />
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-1/2" />
-        <div className="mt-auto flex items-end justify-between pt-2">
-          <Skeleton className="h-5 w-20" />
-          <Skeleton className="h-3 w-24" />
+        <div className="mt-auto flex items-end justify-between pt-2 gap-1.5">
+          <Skeleton className="h-4 sm:h-5 w-12 sm:w-20" />
+          <Skeleton className="h-3 w-16 sm:w-24 shrink-0" />
         </div>
       </div>
     </div>

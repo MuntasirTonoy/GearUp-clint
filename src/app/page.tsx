@@ -53,7 +53,7 @@ const HOW_IT_WORKS = [
     Icon: Search,
     title: "Browse & Filter",
     description:
-      "Search thousands of gear listings by category, location, and price. Find exactly what your adventure needs.",
+      "Search thousands of gear listings by category, location, and price.",
   },
   {
     step: "02",

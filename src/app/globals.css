@@ -249,4 +249,27 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+  .reveal-fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .reveal-scale-in {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  .reveal-visible {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-fade-up,
+    .reveal-scale-in {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+  }
 }

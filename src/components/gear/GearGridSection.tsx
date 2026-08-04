@@ -67,9 +67,15 @@ export default async function GearGridSection({
         {meta?.total ?? gears.length} item
         {(meta?.total ?? gears.length) === 1 ? "" : "s"} found
       </p>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {gears.map((gear) => (
-          <GearCard key={gear.id} gear={gear} />
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 xl:grid-cols-3">
+        {gears.map((gear, index) => (
+          <div
+            key={gear.id}
+            className="animate-fade-up"
+            style={{ animationDelay: `${index * 75}ms` }}
+          >
+            <GearCard gear={gear} />
+          </div>
         ))}
       </div>
       {meta && <GearPagination meta={meta} searchParams={searchParams} />}

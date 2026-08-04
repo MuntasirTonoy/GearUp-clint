@@ -58,11 +58,11 @@ export default async function GearDetailPage({
         </nav>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <div className="min-w-0 space-y-8">
+          <div className="min-w-0 space-y-8 animate-fade-up">
             <GearGallery images={gear.images} name={gear.name} />
 
             <section>
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge
@@ -78,21 +78,28 @@ export default async function GearDetailPage({
                       </span>
                     )}
                   </div>
-                  <h1 className="mt-3 text-3xl font-bold tracking-tight">
+                  <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                     {gear.name}
                   </h1>
                 </div>
-                <p className="whitespace-nowrap text-2xl font-bold">
-                  {formatCurrency(gear.dailyRentalPrice)}
-                  <span className="text-sm font-normal text-muted-foreground">
-                    /day
-                  </span>
-                </p>
+                <div className="mt-1 sm:mt-0">
+                  <p className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatCurrency(gear.dailyRentalPrice)}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      {" "}/day
+                    </span>
+                  </p>
+                </div>
               </div>
-              <p className="mt-4 leading-relaxed text-muted-foreground">
+              <p className="mt-4 leading-relaxed text-muted-foreground text-sm sm:text-base">
                 {gear.description}
               </p>
             </section>
+
+            {/* Mobile / Tablet RentNowWidget (hidden on desktop) */}
+            <div className="block lg:hidden animate-scale-in">
+              <RentNowWidget gear={gear} />
+            </div>
 
             <section className="rounded-xl border border-border bg-card p-5">
               <h2 className="text-lg font-bold">Specifications</h2>
@@ -168,7 +175,7 @@ export default async function GearDetailPage({
             )}
           </div>
 
-          <aside className="min-w-0">
+          <aside className="hidden lg:block min-w-0">
             <RentNowWidget gear={gear} />
           </aside>
         </div>

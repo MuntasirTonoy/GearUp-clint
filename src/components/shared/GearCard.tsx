@@ -38,35 +38,35 @@ export default function GearCard({ gear }: { gear: Gear }) {
             variant={isAvailable ? "default" : "secondary"}
             className={
               isAvailable
-                ? "absolute left-3 top-3 bg-emerald-500 text-white"
-                : "absolute left-3 top-3"
+                ? "absolute left-2 top-2 sm:left-3 sm:top-3 bg-emerald-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2.5 py-0.5"
+                : "absolute left-2 top-2 sm:left-3 sm:top-3 text-[10px] sm:text-xs px-1.5 sm:px-2.5 py-0.5"
             }
           >
             {isAvailable ? "Available" : gear.status}
           </Badge>
         </div>
 
-        <div className="flex flex-1 flex-col gap-1.5 p-4">
-          <h3 className="text-base font-bold text-foreground">
+        <div className="flex flex-1 flex-col gap-1 sm:gap-1.5 p-2.5 sm:p-4">
+          <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-1 sm:line-clamp-2">
             {gear.name}
           </h3>
-          <p className="line-clamp-2 text-sm text-muted-foreground">
+          <p className="line-clamp-2 text-xs sm:text-sm text-muted-foreground">
             {gear.description}
           </p>
           {providerName && (
-              <span className="text-sm font-medium text-foreground">
-                {providerName}
-              </span>
-            )}
-          <div className="mt-auto flex items-center justify-between pt-2">
+            <span className="text-xs sm:text-sm font-medium text-foreground truncate">
+              {providerName}
+            </span>
+          )}
+          <div className="mt-auto flex items-center justify-between pt-2 gap-1.5">
             <div>
-              <span className="text-lg font-bold text-foreground">
+              <span className="text-sm sm:text-lg font-bold text-foreground">
                 {formatCurrency(gear.dailyRentalPrice)}
               </span>
-              <span className="text-xs text-muted-foreground"> /day</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">/day</span>
             </div>
             {isAvailable && gear.quantity > 0 && (
-              <Badge className="bg-orange-500 text-white font-medium text-[11px] px-2 py-0.5 rounded-full">
+              <Badge className="bg-orange-500 text-white font-medium text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full shrink-0">
                 {gear.quantity} in stock
               </Badge>
             )}

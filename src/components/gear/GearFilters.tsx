@@ -177,7 +177,7 @@ export default function GearFilters() {
       <div
         className={cn(
           "flex-col gap-6 lg:flex lg:sticky lg:top-24",
-          isMobileOpen ? "flex" : "hidden"
+          isMobileOpen ? "flex animate-scale-in" : "hidden"
         )}
       >
         <div className="flex items-center justify-between">

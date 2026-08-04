@@ -75,6 +75,7 @@ export default function ProviderOrdersList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [selectedCustomer, setSelectedCustomer] = useState<Rental["customer"] | null>(null);
 
   const fetchRentals = useCallback(async (): Promise<Rental[]> => {
     const result = await RentalService.getProviderRentals();
@@ -211,14 +212,18 @@ export default function ProviderOrdersList() {
                 className="border-b border-border last:border-b-0 hover:bg-muted/50"
               >
                 <td className="px-4 py-3">
-                  <div>
-                    <div className="font-medium text-foreground">
+                  <button
+                    type="button"
+                    className="text-left outline-none group focus-visible:underline cursor-pointer"
+                    onClick={() => setSelectedCustomer(rental.customer)}
+                  >
+                    <div className="font-medium text-foreground group-hover:text-emerald-500 transition-colors">
                       {rental.customer?.name ?? "Customer"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {rental.customer?.email ?? ""}
                     </div>
-                  </div>
+                  </button>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
@@ -283,6 +288,92 @@ export default function ProviderOrdersList() {
           })}
         </tbody>
       </table>
+
+      {selectedCustomer && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
+          onClick={() => setSelectedCustomer(null)}
+        >
+          <div 
+            className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-xl animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-border">
+              <h3 className="text-lg font-bold text-foreground">Customer Details</h3>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-8 rounded-full"
+                onClick={() => setSelectedCustomer(null)}
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+            
+            <div className="mt-6 flex flex-col items-center gap-4 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 font-bold text-xl uppercase">
+                {selectedCustomer.profilePhoto ? (
+                  <img
+                    src={selectedCustomer.profilePhoto}
+                    alt={selectedCustomer.name}
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                ) : (
+                  <span>
+                    {selectedCustomer.name
+                      ? selectedCustomer.name
+                          .split(" ")
+                          .map((p) => p[0])
+                          .slice(0, 2)
+                          .join("")
+                      : "C"}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h4 className="text-xl font-bold text-foreground">{selectedCustomer.name ?? "Customer"}</h4>
+                <p className="text-sm text-muted-foreground">Customer Account</p>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-4 rounded-xl border border-border bg-muted/40 p-4 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-muted-foreground shrink-0">Email Address</span>
+                <a 
+                  href={`mailto:${selectedCustomer.email}`} 
+                  className="font-medium text-foreground hover:text-emerald-500 transition-colors truncate"
+                >
+                  {selectedCustomer.email ?? "—"}
+                </a>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-muted-foreground shrink-0">Mobile Number</span>
+                {selectedCustomer.phone ? (
+                  <a 
+                    href={`tel:${selectedCustomer.phone}`} 
+                    className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                  >
+                    {selectedCustomer.phone}
+                  </a>
+                ) : (
+                  <span className="font-medium text-muted-foreground">Not provided</span>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Button
+                type="button"
+                className="w-full bg-emerald-500 text-white hover:bg-emerald-400"
+                onClick={() => setSelectedCustomer(null)}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

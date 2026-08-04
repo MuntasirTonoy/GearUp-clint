@@ -54,6 +54,15 @@ export default function RootLayout({
             })();
           `}
         </Script>
+        <noscript>
+          <style dangerouslySetInnerHTML={{ __html: `
+            .reveal-fade-up, .reveal-scale-in {
+              opacity: 1 !important;
+              transform: none !important;
+              transition: none !important;
+            }
+          `}} />
+        </noscript>
         <Navbar />
         {children}
         <Toaster position="top-center" richColors />
