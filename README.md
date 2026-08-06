@@ -242,7 +242,7 @@ This project is licensed under the MIT License.
 
 ## 👥 Authors
 
-- **GearUp Team** - Initial work
+- **Digital Solution Inc** - Initial work
 
 ---
 
